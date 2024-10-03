@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User'); // Import the User model
+const Transaction = require('./models/Transaction'); //Import the Transaction model
 const bcrypt = require('bcryptjs'); // Import bcryptjs for password hashing
 const jwt = require('jsonwebtoken'); // Import jsonwebtoken for session management
 require('dotenv').config();
@@ -128,3 +129,58 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
   
+// Create a new transaction
+app.post('/transfer', async (req, res) => {
+    const { fromAccountNumber, toAccountNumber, amount } = req.body;
+
+    try {
+        // Validate input
+        if (!fromAccountNumber || !toAccountNumber || !amount) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        // Find users
+        const fromAccount = await User.findOne({ accountNumber: fromAccountNumber });
+        const toAccount = await User.findOne({ accountNumber: toAccountNumber });
+
+        if (!fromAccount || !toAccount) {
+            return res.status(404).json({ message: 'Account not found' });
+        }
+
+        // Create transaction
+        const transaction = new Transaction({
+            fromAccount: fromAccount._id,
+            toAccount: toAccount._id,
+            amount: amount,
+        });
+
+        await transaction.save();
+
+        res.status(201).json({ message: 'Transaction created', transaction });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Get transaction history for a user
+app.get('/history/:accountNumber', async (req, res) => {
+    const { accountNumber } = req.params;
+
+    try {
+        // Find user
+        const user = await User.findOne({ accountNumber });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Find transactions involving this user
+        const transactions = await Transaction.find({
+            $or: [{ fromAccount: user._id }, { toAccount: user._id }],
+        }).populate('fromAccount toAccount', 'accountNumber fullName');
+
+        res.status(200).json({ transactions });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
