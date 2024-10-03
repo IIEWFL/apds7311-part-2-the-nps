@@ -3,9 +3,10 @@ const mongoose = require('mongoose');
 const https = require('https'); // Import HTTPS module
 const fs = require('fs'); // Import FS module
 const User = require('./models/User'); // Import the User model
-const Transaction = require('./models/Transaction'); //Import the Transaction model
+const Transaction = require('./models/Transaction'); // Import the Transaction model
 const bcrypt = require('bcryptjs'); // Import bcryptjs for password hashing
 const jwt = require('jsonwebtoken'); // Import jsonwebtoken for session management
+const { body, validationResult } = require('express-validator'); // Import express-validator
 require('dotenv').config();
 
 const app = express();
@@ -25,15 +26,20 @@ app.get('/', (req, res) => {
 });
 
 // Registration Route
-app.post('/register', async (req, res) => {
+app.post('/register', [
+  body('fullName').notEmpty().withMessage('Full name is required'),
+  body('idNumber').notEmpty().withMessage('ID number is required'),
+  body('accountNumber').notEmpty().withMessage('Account number is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { fullName, idNumber, accountNumber, password } = req.body;
 
   try {
-    // Validate input
-    if (!fullName || !idNumber || !accountNumber || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
     // Check if user already exists
     const existingUser = await User.findOne({ accountNumber });
     if (existingUser) {
@@ -41,8 +47,8 @@ app.post('/register', async (req, res) => {
     }
 
     // Create new user
-    const user = new User({ fullName, idNumber, accountNumber, password }); // Password will be hashed in the model
-    await user.save(); // Save user to the database
+    const user = new User({ fullName, idNumber, accountNumber, password });
+    await user.save();
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -52,17 +58,20 @@ app.post('/register', async (req, res) => {
 });
 
 // Login Route
-app.post('/login', async (req, res) => {
+app.post('/login', [
+  body('accountNumber').notEmpty().withMessage('Account number is required'),
+  body('password').notEmpty().withMessage('Password is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { accountNumber, password } = req.body;
 
   console.log('Login attempt:', req.body); // Log the incoming request body
 
   try {
-    // Validate input
-    if (!accountNumber || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
     // Find the user by account number
     const user = await User.findOne({ accountNumber });
     if (!user) {
@@ -73,13 +82,10 @@ app.post('/login', async (req, res) => {
     console.log('User found:', user); // Log the user retrieved from the database
 
     // Attempt to compare the provided password with the stored hashed password
-    const isMatch = await user.comparePassword(password); // Use the method from the User model
+    const isMatch = await user.comparePassword(password);
 
-    console.log('Password comparison:');
-    console.log('Provided password:', password); // Log the provided password (plain text)
-    console.log('Stored password hash:', user.password); // Log the stored hash for debugging
-    console.log('Password match result:', isMatch); // Log the result of the password comparison
-
+    console.log('Password comparison:', { providedPassword: password, storedPasswordHash: user.password });
+    
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid password' });
     }
@@ -90,47 +96,50 @@ app.post('/login', async (req, res) => {
     // Login successful
     res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
-    console.error('Login error:', error); // Log the error for debugging
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Authentication Middleware
 const authenticateToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1]; // Extract token from header
+  const token = req.headers['authorization']?.split(' ')[1];
 
   if (!token) {
-    console.log('No token provided'); // Log for debugging
-    return res.sendStatus(401); // Unauthorized
+    console.log('No token provided');
+    return res.sendStatus(401);
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
-      console.log('Token verification failed:', err.message); // Log error message
-      return res.sendStatus(403); // Forbidden
+      console.log('Token verification failed:', err.message);
+      return res.sendStatus(403);
     }
-    req.user = user; // Store user information in the request
-    console.log('Token verified successfully:', user); // Log verified user info
-    next(); // Continue to the next middleware
+    req.user = user;
+    console.log('Token verified successfully:', user);
+    next();
   });
 };
 
 // Logout Route
 app.post('/logout', (req, res) => {
-  // Inform the client to remove the token on their side
   res.status(200).json({ message: 'Logout successful. Please remove the token and redirect to the login screen.' });
 });
 
 // Create a new transaction
-app.post('/transfer', authenticateToken, async (req, res) => {
+app.post('/transfer', authenticateToken, [
+  body('fromAccountNumber').notEmpty().withMessage('From account number is required'),
+  body('toAccountNumber').notEmpty().withMessage('To account number is required'),
+  body('amount').isNumeric().withMessage('Amount must be a number').notEmpty().withMessage('Amount is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { fromAccountNumber, toAccountNumber, amount } = req.body;
 
   try {
-    // Validate input
-    if (!fromAccountNumber || !toAccountNumber || !amount) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
     // Find users
     const fromAccount = await User.findOne({ accountNumber: fromAccountNumber });
     const toAccount = await User.findOne({ accountNumber: toAccountNumber });
@@ -150,6 +159,7 @@ app.post('/transfer', authenticateToken, async (req, res) => {
 
     res.status(201).json({ message: 'Transaction created', transaction });
   } catch (error) {
+    console.error('Transfer error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -173,6 +183,7 @@ app.get('/history/:accountNumber', authenticateToken, async (req, res) => {
 
     res.status(200).json({ transactions });
   } catch (error) {
+    console.error('History retrieval error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
