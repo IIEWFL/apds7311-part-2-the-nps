@@ -1,0 +1,76 @@
+/* Login.css */
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .input-field:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
+  .error-message {
+    color: red;
+    margin-top: 10px;
+  }
+  
+  .button-group {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .login-button,
+  .back-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .login-button {
+    background-color: #589bf3;
+    color: rgb(0, 0, 0);
+  }
+  
+  .back-button {
+    background-color: #589bf3;
+    color: rgb(0, 0, 0);
+  }
+  
+  .login-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .back-button:hover {
+    background-color: #5a6268;
+  }
+  
