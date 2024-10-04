@@ -26,12 +26,16 @@ app.use('/api/auth', authRoutes);
 app.use('/api', transactionRoutes);
 
 // SSL Certificate and key
-const options = {
+/*const options = {
     key: fs.readFileSync('Keys/server.key'),
     cert: fs.readFileSync('Keys/server.cert')
-}
+}*/
 
 
-https.createServer(options, app).listen(PORT, () => {
+/*https.createServer(options, app).listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
-}) 
+}) */
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
+})
