@@ -15,6 +15,25 @@ const TransactionSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    type: {
+        type: String,
+        enum: ['deposit', 'withdrawal'],
+        required: true
+    },
+    currency: {
+        type: String,
+        enum: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'ZAR', 'CAD', 'CHF', 'CNY'],
+        required: true
+    },
+    conversionRate: {
+        type: Number, // To store the exchange rate at the time of transaction
+        required: true
+    },
+    paymentMethod: {
+        type: String,
+        enum: ['credit_card', 'debit_card', 'bank_transfer', 'paypal'],
+        required: true
+    },
     transactionDate: {
         type: Date,
         default: Date.now,
