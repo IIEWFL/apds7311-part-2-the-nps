@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './Payments_Client.css'; // Import your CSS file for styling
+import './Payment_Client.css'; // Import your CSS file for styling
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
@@ -25,7 +25,7 @@ function Payments_Client() {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
 
-  // Fetch transactions from the backend when the component is mounted
+  // Fetch transactions for the current user from the backend when the component is mounted
   useEffect(() => {
     async function fetchTransactions() {
       try {
@@ -39,12 +39,13 @@ function Payments_Client() {
   }, []);
 
   // Handle form submission
-  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
     try {
       await axios.post('/api/transactions', values); // Post the form data to the backend
       // Fetch and refresh the transactions after submitting a new one
       const response = await axios.get('/api/transactions');
       setTransactions(response.data); // Update the transaction history
+      resetForm(); // Reset the form fields after submission
     } catch (err) {
       if (err.response) {
         setErrors({ serverError: err.response.data.message }); // Display server error
@@ -56,11 +57,16 @@ function Payments_Client() {
     }
   };
 
+  // Handle cancel button - reset the form fields
+  const handleCancel = (resetForm) => {
+    resetForm(); // Reset the form fields when cancel is clicked
+  };
+
   return (
     <div className="payments-container">
       <div className="payments-box">
         <h1 className="payments-title">Payments</h1>
-        <p>Here is where you can make your trannactions and see a list of all your past transactions.</p>
+        <p>Here is where you can make your transactions and see a list of all your past transactions.</p>
 
         {/* Formik form for payments */}
         <Formik
@@ -75,7 +81,7 @@ function Payments_Client() {
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({ isSubmitting, errors }) => (
+          {({ isSubmitting, errors, resetForm }) => (
             <Form>
               <div className="form-group">
                 <label htmlFor="fromAccount">From Account:</label>
@@ -158,7 +164,12 @@ function Payments_Client() {
                 <button type="submit" className="submit-button" disabled={isSubmitting}>
                   {isSubmitting ? 'Processing...' : 'Make Payment'}
                 </button>
-                <button type="cancel" className="cancel-button" disabled={isSubmitting}>
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={() => handleCancel(resetForm)}
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? 'Processing...' : 'Cancel Payment'}
                 </button>
                 <button type="button" className="back-button" onClick={() => navigate('/')}>
