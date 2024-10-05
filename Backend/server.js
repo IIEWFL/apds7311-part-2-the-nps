@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import helmet from 'helmet';
 import https from 'https'; // HTTPS module
+import morgan from 'morgan';
 import fs from 'fs'; // File system module
 import User from './models/User.js'; // User model (ensure file paths include the extension)
 import Transaction from '../models/Transaction.js'; // Transaction model
@@ -12,11 +14,20 @@ import dotenv from 'dotenv'; // Environment variables
 // Load environment variables from .env file
 dotenv.config();
 
+// Correctly reference the 'server.key' and 'server.cert' (if applicable) inside the 'Keys' folder
+const key = fs.readFileSync('./Keys/server.key');
+const cert = fs.readFileSync('./Keys/server.cert'); // if you have a certificate file as well
+
+
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json()); // Allows the server to parse JSON bodies
+app.use(helmet()) // Extra layer of security to your API
+app.use(morgan('combined')); // request logger middleware
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -198,12 +209,13 @@ app.use((err, req, res, next) => {
 });
 
 // HTTPS server setup
+// HTTPS server setup
 const options = {
-  key: fs.readFileSync('server.key'), // Path to your private key
-  cert: fs.readFileSync('server.cert') // Path to your certificate
+  key: fs.readFileSync('./Keys/server.key'), // Corrected path to the private key
+  cert: fs.readFileSync('./Keys/server.cert') // Corrected path to the certificate
 };
 
 // Start the server
-https.createServer(options, app).listen(PORT, () => {
+https.createServer({ key: key, cert: cert }, app).listen(PORT, () =>{
   console.log(`HTTPS Server is running on port ${PORT}`);
 });

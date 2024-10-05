@@ -13,12 +13,12 @@ router.post('/register',async (req,res) => {
     console.log('Register route hit');
     try {
 
-    const { username, fullName, idNumber, accountNumber, password } = req.body;
- 
-      // Check if user already exists
-      const existingUser = await User.findOne({ accountNumber });
-      if (existingUser) {
-        return res.status(400).json({ message: 'User Account Number already exists' });
+        const { username, fullName, idNumber, accountNumber, password } = req.body;
+    
+        // Check if user already exists
+        const existingUser = await User.findOne({ accountNumber });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User Account Number already exists' });
     }
         // Hash Password 
     const hasedPassword = await bcrypt.hash(password, 10);
