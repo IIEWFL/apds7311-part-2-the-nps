@@ -209,7 +209,6 @@ app.use((err, req, res, next) => {
 });
 
 // HTTPS server setup
-// HTTPS server setup
 const options = {
   key: fs.readFileSync('./Keys/server.key'), // Corrected path to the private key
   cert: fs.readFileSync('./Keys/server.cert') // Corrected path to the certificate
@@ -217,5 +216,9 @@ const options = {
 
 // Start the server
 https.createServer({ key: key, cert: cert }, app).listen(PORT, () =>{
-  console.log(`HTTPS Server is running on port ${PORT}`);
+  if (err) {
+    console.error('Failed to start server:', err);
+} else {
+    console.log(`Https Server is running on port ${PORT}`);
+}
 });
