@@ -1,14 +1,22 @@
 import mongoose from'mongoose';
 //const bcrypt = require('bcryptjs'); // Ensure consistency in the bcrypt library
 
+// Function to check password complexity
+const passwordComplexity = (password) => {
+  const complexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/; // At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
+  return complexityRegex.test(password);
+};
+
 const UserSchema = new mongoose.Schema({
     username: { 
       type: String, 
-      required: true },
+      required: true,
+      unique: true,
+      trim: true
+    },
     fullName: { 
       type: String, 
       required: true, 
-      unique: true, 
       trim: true },
     idNumber: {
       type: String,
@@ -30,6 +38,10 @@ const UserSchema = new mongoose.Schema({
       type: String,
       required: [true, "Password is required"],
       minlength: [8, "Password should be at least 8 characters long"]
+      // ,validate: {
+      //   validator: passwordComplexity,
+      //   message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      // }
   }
   });
 

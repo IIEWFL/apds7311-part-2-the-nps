@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import helmet from 'helmet';
 import https from 'https'; // HTTPS module
 import morgan from 'morgan';
+import argon2 from 'argon2';
 import fs from 'fs'; // File system module
 import User from './models/User.js'; // User model (ensure file paths include the extension)
 import Transaction from '../models/Transaction.js'; // Transaction model
@@ -10,6 +11,7 @@ import bcrypt from 'bcryptjs'; // Password hashing
 import jwt from 'jsonwebtoken'; // JWT for session management
 import { body, validationResult } from 'express-validator'; // Input validation
 import dotenv from 'dotenv'; // Environment variables
+import bodyParser from 'body-parser';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -25,8 +27,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json()); // Allows the server to parse JSON bodies
-app.use(helmet()) // Extra layer of security to your API
-app.use(morgan('combined')); // request logger middleware
+// app.use(helmet()) // Extra layer of security to your API
+// app.use(morgan('combined')); // request logger middleware
 
 
 // Connect to MongoDB
@@ -41,17 +43,21 @@ app.get('/', (req, res) => {
 
 // Registration Route
 app.post('/register', [
+  body('username').notEmpty().withMessage('Username is required'),
   body('fullName').notEmpty().withMessage('Full name is required'),
   body('idNumber').notEmpty().withMessage('ID number is required'),
   body('accountNumber').notEmpty().withMessage('Account number is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long'),
 ], async (req, res) => {
+  console.log('Request body:', req.body); // Log the incoming request body
+  
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { fullName, idNumber, accountNumber, password } = req.body;
+  // Destructure the required fields from the request body
+  const { username, fullName, idNumber, accountNumber, password } = req.body;
 
   try {
     // Check if user already exists
@@ -60,16 +66,25 @@ app.post('/register', [
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user
-    const user = new User({ fullName, idNumber, accountNumber, password });
+    // Hash the password using Argon2
+    const hashedPassword = await argon2.hash(password);
+
+    // Create new user with the hashed password
+    const user = new User({ username, fullName, idNumber, accountNumber, password: hashedPassword });
     await user.save();
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'User with this account number already exists' });
+    }
+    console.log('Username:', username);
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 // Login Route
 app.post('/login', [
@@ -215,10 +230,7 @@ const options = {
 };
 
 // Start the server
-https.createServer({ key: key, cert: cert }, app).listen(PORT, () =>{
-  if (err) {
-    console.error('Failed to start server:', err);
-} else {
-    console.log(`Https Server is running on port ${PORT}`);
-}
+// Start the server
+https.createServer({ key: key, cert: cert }, app).listen(PORT, () => {
+  console.log(`Https Server is running on port ${PORT}`);
 });
