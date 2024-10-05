@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // Import the CSS file for styling
+import './Login.css'; // Ensure you update your CSS to match the styles below
 import axios from 'axios';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -29,107 +29,115 @@ function Login() {
     navigate('/'); // Navigate back to the Welcome page
   };
 
-  const handleLoginClick = async (values, { setSubmitting, setErrors }) => {
-    try {
-      const response = await axios.post('/api/auth/login', {
-        username: values.username,
-        accountNumber: values.accountNumber,
-        password: values.password,
-        userType: userType
-      });
+ const handleLoginClick = async (values, { setSubmitting, setErrors }) => {
+  try {
+    const response = await axios.post('/api/auth/login', {
+      username: values.username,
+      accountNumber: values.accountNumber,
+      password: values.password,
+      userType: userType
+    });
 
-      localStorage.setItem('token', response.data.token);
-      navigate('/payments');
-    } catch (err) {
-      if (err.response) {
-        setErrors({ serverError: err.response.data.message });
-      } else {
-        setErrors({ serverError: 'Something went wrong. Please try again.' });
-      }
-    } finally {
-      setSubmitting(false);
+    localStorage.setItem('token', response.data.token);
+          // Navigate to the appropriate payments page based on user type
+          if (userType === 'Client') {
+            navigate('/payments_clients'); // Navigate to Payments_Clients
+          } else {
+            navigate('/payments_staff'); // Navigate to Payments_Staff
+          }
+        
+  } catch (err) {
+    if (err.response) {
+      setErrors({ serverError: err.response.data.message });
+    } else {
+      setErrors({ serverError: 'Something went wrong. Please try again.' });
     }
-  };
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h1 className="login-title">Login</h1>
-        <p className="login-description">Please enter your login details below.</p>
+    <div className="container"> {/* Added a container class here */}
+      <div className="login-container">
+        <div className="login-box">
+          <h1 className="login-title">Login</h1>
+          <p className="login-description">Please enter your login details below.</p>
 
-        <Formik
-          initialValues={{ username: '', accountNumber: '', password: '' }}
-          validationSchema={validationSchema(userType)}
-          onSubmit={handleLoginClick}
-        >
-          {({ isSubmitting, errors }) => (
-            <Form>
-              <div className="form-group">
-                <label htmlFor="userType">User Type:</label>
-                <Field
-                  as="select"
-                  id="userType"
-                  name="userType"
-                  className="input-field"
-                  onChange={(e) => setUserType(e.target.value)} // Update user type
-                  value={userType}
-                >
-                  <option value="Client">Client</option>
-                  <option value="Staff">Staff</option>
-                </Field>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="username">Username:</label>
-                <Field
-                  type="text"
-                  id="username"
-                  name="username"
-                  placeholder="Enter your username"
-                  className="input-field"
-                />
-                <ErrorMessage name="username" component="div" className="error-message" />
-              </div>
-
-              {userType === 'Client' && (
+          <Formik
+            initialValues={{ username: '', accountNumber: '', password: '' }}
+            validationSchema={validationSchema(userType)}
+            onSubmit={handleLoginClick}
+          >
+            {({ isSubmitting, errors }) => (
+              <Form>
                 <div className="form-group">
-                  <label htmlFor="accountNumber">Account Number:</label>
+                  <label htmlFor="userType">User Type:</label>
+                  <Field
+                    as="select"
+                    id="userType"
+                    name="userType"
+                    className="input-field"
+                    onChange={(e) => setUserType(e.target.value)} // Update user type
+                    value={userType}
+                  >
+                    <option value="Client">Client</option>
+                    <option value="Staff">Staff</option>
+                  </Field>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="username">Username:</label>
                   <Field
                     type="text"
-                    id="accountNumber"
-                    name="accountNumber"
-                    placeholder="Enter your account number"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
                     className="input-field"
                   />
-                  <ErrorMessage name="accountNumber" component="div" className="error-message" />
+                  <ErrorMessage name="username" component="div" className="error-message" />
                 </div>
-              )}
 
-              <div className="form-group">
-                <label htmlFor="password">Password:</label>
-                <Field
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="Enter your password"
-                  className="input-field"
-                />
-                <ErrorMessage name="password" component="div" className="error-message" />
-              </div>
+                {userType === 'Client' && (
+                  <div className="form-group">
+                    <label htmlFor="accountNumber">Account Number:</label>
+                    <Field
+                      type="text"
+                      id="accountNumber"
+                      name="accountNumber"
+                      placeholder="Enter your account number"
+                      className="input-field"
+                    />
+                    <ErrorMessage name="accountNumber" component="div" className="error-message" />
+                  </div>
+                )}
 
-              {errors.serverError && <p className="error-message">{errors.serverError}</p>}
+                <div className="form-group">
+                  <label htmlFor="password">Password:</label>
+                  <Field
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    className="input-field"
+                  />
+                  <ErrorMessage name="password" component="div" className="error-message" />
+                </div>
 
-              <div className="button-group">
-                <button type="submit" className="login-button" disabled={isSubmitting}>
-                  {isSubmitting ? 'Logging in...' : 'Login'}
-                </button>
-                <button type="button" className="back-button" onClick={handleBackClick}>
-                  Back to Welcome
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
+                {errors.serverError && <p className="error-message server-error">{errors.serverError}</p>}
+
+                <div className="button-group">
+                  <button type="submit" className="login-button" disabled={isSubmitting}>
+                    {isSubmitting ? 'Logging in...' : 'Login'}
+                  </button>
+                  <button type="button" className="back-button" onClick={handleBackClick}>
+                    Back to Welcome
+                  </button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './Payments_Staff.css'; // Import your CSS file for styling
+import './Payment_Staff.css'; // Import your CSS file for styling
 
 function Payments_Staff() {
   const navigate = useNavigate();
