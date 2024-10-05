@@ -8,12 +8,26 @@ function Welcome() {
 
   // Function to handle the login button click
   const handleLoginClick = () => {
+    setActiveTab('login'); // Set active tab to login
     navigate('/login'); // Navigate to the Login route
   };
 
-  // Function to handle tab switching
-  const handleTabClick = (tabName) => {
-    setActiveTab(tabName);
+  // Function to handle the register button click
+  const handleRegisterClick = () => {
+    setActiveTab('register'); // Set active tab to register
+    navigate('/register'); // Navigate to the Register route
+  };
+
+  // Function to handle the register button click
+  const handlePaymentsClick = () => {
+    setActiveTab('payments'); // Set active tab to register
+    navigate('/payments'); // Navigate to the Register route
+  };
+
+   // Function to handle the register button click
+   const handlePaymentClick = () => {
+    setActiveTab('payment'); // Set active tab to register
+    navigate('/payment'); // Navigate to the Register route
   };
 
   return (
@@ -31,9 +45,21 @@ function Welcome() {
         </button>
         <button 
           className={activeTab === 'register' ? 'active-tab' : ''} 
-          onClick={() => handleTabClick('register')}
+          onClick={handleRegisterClick}
         >
           Register
+        </button>
+        <button 
+          className={activeTab === 'payments' ? 'active-tab' : ''} 
+          onClick={handlePaymentsClick}
+        >
+          Payments -Client
+        </button>
+        <button 
+          className={activeTab === 'payment' ? 'active-tab' : ''} 
+          onClick={handlePaymentClick}
+        >
+          Payments -Staff
         </button>
       </div>
     </div>

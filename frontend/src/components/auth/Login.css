@@ -57,20 +57,20 @@
   }
   
   .login-button {
-    background-color: #589bf3;
+    background-color: #007bff;
     color: rgb(0, 0, 0);
   }
   
   .back-button {
-    background-color: #589bf3;
+    background-color: #041cd471;
     color: rgb(0, 0, 0);
   }
   
   .login-button:hover {
-    background-color: #0056b3;
+    background-color: #007bff;
   }
   
   .back-button:hover {
-    background-color: #5a6268;
+    background-color:#041cd471;
   }
   
