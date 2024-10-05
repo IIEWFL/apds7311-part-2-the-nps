@@ -1,13 +1,16 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const https = require('https'); // Import HTTPS module
-const fs = require('fs'); // Import FS module
-const User = require('./models/User'); // Import the User model
-const Transaction = require('./models/Transaction'); // Import the Transaction model
-const bcrypt = require('bcryptjs'); // Import bcryptjs for password hashing
-const jwt = require('jsonwebtoken'); // Import jsonwebtoken for session management
-const { body, validationResult } = require('express-validator'); // Import express-validator
-require('dotenv').config();
+import express from 'express';
+import mongoose from 'mongoose';
+import https from 'https'; // HTTPS module
+import fs from 'fs'; // File system module
+import User from './models/User.js'; // User model (ensure file paths include the extension)
+import Transaction from '../models/Transaction.js'; // Transaction model
+import bcrypt from 'bcryptjs'; // Password hashing
+import jwt from 'jsonwebtoken'; // JWT for session management
+import { body, validationResult } from 'express-validator'; // Input validation
+import dotenv from 'dotenv'; // Environment variables
+
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
