@@ -45,7 +45,7 @@ router.post('/register', async (req, res) => {
         console.log('Hashed Password:', hashedPassword); // Log the hashed password for debugging
 
         // Create new user
-        const newUser = new User({
+        const User = new User({
             username,
             fullName,
             idNumber,
@@ -53,7 +53,7 @@ router.post('/register', async (req, res) => {
             password: hashedPassword
         });
 
-        await newUser.save();
+        await User.save();
 
         return res.status(201).json({ message: 'User registered successfully' });
 
