@@ -1,5 +1,5 @@
 import mongoose from'mongoose';
-//const bcrypt = require('bcryptjs'); // Ensure consistency in the bcrypt library
+
 
 // Function to check password complexity
 const passwordComplexity = (password) => {

@@ -25,6 +25,11 @@ const TransactionSchema = new mongoose.Schema({
         enum: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'ZAR', 'CAD', 'CHF', 'CNY'],
         required: true
     },
+    targetCurrency: {
+        type: String, // New field for storing the target currency
+        enum: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'ZAR', 'CAD', 'CHF', 'CNY'],
+        required: true
+    },
     conversionRate: {
         type: Number, // To store the exchange rate at the time of transaction
         required: true

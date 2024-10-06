@@ -1,18 +1,19 @@
 import LoginAttempt from '../models/LoginAttempts.js';
 
 const loginAttemptLogger = async(req, res, next) => {
-    const originalJson = req.json;
-    res.json =function(data){
-      
-        const accountNumber = req.body.accountNumber;
-        const ipAddress = req.id || req.connection.remoteAddress;
-        const successfulLogin = !data.message || data.message !== 'Invalid Credentials';
+    const originalJson = res.json;  // Store original res.json method
 
-        LoginAttempt.create({accountNumber, ipAddress, successfulLogin})
-        .catch(err => console.error('Error logging Login attempt:', err));
+    // Override res.json method
+    res.json = function (data) {
+    console.log('Login attempt:', req.body);  // Log the login attempt
 
-        originalJson.call(this, data);
+    // Log response data (e.g., token or error message)
+    console.log('Login response data:', data);
+
+    // Call the original res.json method with the provided data
+    originalJson.call(this, data);
     };
+
     next();
 }
 export default loginAttemptLogger;
