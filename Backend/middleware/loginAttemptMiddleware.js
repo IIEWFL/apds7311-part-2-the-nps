@@ -6,12 +6,12 @@ const loginAttemptLogger = async (req, res, next) => {
 
     // Overwrite res.json
     res.json = function(data) {
-        const accountNumber = req.body.accountNumber;
+        const username = req.body.username;
         const ipAddress = req.id || req.connection.remoteAddress; // Assuming req.id is set elsewhere
         const successfulLogin = !data.message || data.message !== 'Invalid Credentials';
 
         // Create a new login attempt log
-        LoginAttempt.create({ accountNumber, ipAddress, successfulLogin })
+        LoginAttempt.create({ username, ipAddress, successfulLogin })
             .catch(err => console.error('Error logging Login attempt:', err)); // Handle logging error
 
         // Call the original res.json with the correct context and data
