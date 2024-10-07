@@ -19,11 +19,9 @@ const bruceForceSchema = new mongoose.Schema({
 const BruteForceModel = mongoose.model("bruceforce", bruceForceSchema);
 
 // Initialize the MongooseStore with the BruteForceModel
-// This store will save and retrieve brute-force data from the MongoDB database using the defined model
 const store = new MongooseStore(BruteForceModel);
 
 // Configure the brute-force protection
-// Initialize the ExpressBrute middleware with the Mongoose store
 const brusteForce = new ExpressBrute(store, {
     // Number of allowed retries before brute-force protection kicks in (2 free attempts)
     freeRetries: 2,
@@ -36,6 +34,9 @@ const brusteForce = new ExpressBrute(store, {
 
     // Custom failure callback function that is executed when the limit is exceeded
     failCallback: function(req, res, next, nextValidRequestDate) {
+        // Log the details of the failed attempt
+        console.warn(`Too many failed attempts for ${req.ip}. Next valid request date: ${nextValidRequestDate}`);
+
         // Send a 429 status code (Too Many Requests) and a JSON response indicating the wait time
         res.status(429).json({
             message: "Too many failed attempts. Please try again later.", // Inform the user they've exceeded the retry limit
@@ -43,6 +44,9 @@ const brusteForce = new ExpressBrute(store, {
         });
     }
 });
+
+// Log schema creation for debugging purposes
+console.info("BruteForceModel and MongooseStore initialized.");
 
 // Export the brute-force middleware so it can be used in other parts of the application
 export default brusteForce;

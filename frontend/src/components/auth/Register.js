@@ -29,7 +29,7 @@ function Register() {
 
   const handleRegisterClick = async (values, { setSubmitting, setErrors }) => {
     try {
-      const response = await axios.post('/api/auth/register', {
+      const response = await axios.post('https://localhost:5000/api/auth/register', {
         username: values.username,
         fullName: values.fullName,
         accountNumber: values.accountNumber,
