@@ -9,6 +9,7 @@ import loginAttemptLogger from '../middleware/loginAttemptMiddleware.js';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
 // Registration Route
 router.post('/register', async (req, res) => {
     console.log('Register route hit');
