@@ -23,3 +23,6 @@ const StaffSchema = new mongoose.Schema({
 });
 // Export the Staff model
 export default mongoose.model('Staff', StaffSchema);
+
+// This method was adapted from the Mongoose documentation on defining schemas
+// https://mongoosejs.com/docs/guide.html

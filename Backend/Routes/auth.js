@@ -193,3 +193,8 @@ router.post('/logout', async (req, res) => {
 });
 
 export default router;
+
+// This method was adapted from various discussions and tutorials on setting up authentication routes with Express
+// https://dev.to/aritik/setting-up-auth-routes-with-express-57oi
+// DEV Community
+// https://dev.to
