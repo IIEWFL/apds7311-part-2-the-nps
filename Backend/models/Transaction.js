@@ -1,4 +1,18 @@
-import mongoose from'mongoose';
+import mongoose from 'mongoose';
+
+// Define an array of SWIFT codes with their corresponding bank names
+const SWIFT_CODES = [
+    { bank: 'Absa Bank', code: 'ABSAZAJJ' },
+    { bank: 'Standard Bank', code: 'SBZAZAJJ' },
+    { bank: 'First National Bank (FNB)', code: 'FIRNZAJJ' },
+    { bank: 'Nedbank', code: 'NEDSZAJJ' },
+    { bank: 'Capitec Bank', code: 'CABLZAJJ' },
+    { bank: 'Investec Bank', code: 'INVZZAJJ' },
+    { bank: 'African Bank', code: 'AFSIZAJJ' },
+    { bank: 'HSBC Bank', code: 'HSBCZAJJ' },
+    { bank: 'Rand Merchant Bank', code: 'RMBKZAJJ' },
+ 
+];
 
 // Define the transaction schema
 const TransactionSchema = new mongoose.Schema({
@@ -15,28 +29,24 @@ const TransactionSchema = new mongoose.Schema({
     amount: {
         type: Number,
         required: true,
-        min: [0, 'Amount must be a positive number'], // Ensure amount is positive
-    },
-    type: {
-        type: String,
-        enum: ['deposit', 'withdrawal'],
-        required: true
+        min: [0, 'Amount must be a positive number'],
     },
     currency: {
         type: String,
         enum: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'ZAR', 'CAD', 'CHF', 'CNY'],
         required: true,
-        match: /^[A-Z]{3}$/, // Ensure currency is a 3-letter uppercase code
+        match: /^[A-Z]{3}$/,
     },
-    conversionRate: {
-        type: Number, // To store the exchange rate at the time of transaction
+    swiftCode: {
+        type: String,
         required: true,
-        min: [0, 'Conversion rate must be a positive number'], // Ensure conversion rate is positive
+        enum: SWIFT_CODES.map(swift => swift.code), 
+        match: /^[A-Z0-9]{8,11}$/, 
     },
     paymentMethod: {
         type: String,
         enum: ['credit_card', 'debit_card', 'bank_transfer', 'paypal'],
-        required: true
+        required: true,
     },
     transactionDate: {
         type: Date,
@@ -44,7 +54,7 @@ const TransactionSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'completed', 'failed'],
+        enum: ['pending', 'verified', 'completed', 'failed'],
         default: 'pending',
     },
 });
