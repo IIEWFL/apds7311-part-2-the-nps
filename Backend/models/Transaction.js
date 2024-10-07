@@ -14,6 +14,7 @@ const TransactionSchema = new mongoose.Schema({
     amount: {
         type: Number,
         required: true,
+        min: [0, 'Amount must be a positive number'], // Ensure amount is positive
     },
     type: {
         type: String,
@@ -23,11 +24,13 @@ const TransactionSchema = new mongoose.Schema({
     currency: {
         type: String,
         enum: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'ZAR', 'CAD', 'CHF', 'CNY'],
-        required: true
+        required: true,
+        match: /^[A-Z]{3}$/, // Ensure currency is a 3-letter uppercase code
     },
     conversionRate: {
         type: Number, // To store the exchange rate at the time of transaction
-        required: true
+        required: true,
+        min: [0, 'Conversion rate must be a positive number'], // Ensure conversion rate is positive
     },
     paymentMethod: {
         type: String,
@@ -44,5 +47,4 @@ const TransactionSchema = new mongoose.Schema({
         default: 'pending',
     },
 });
-
 export default mongoose.model('Transaction', TransactionSchema);

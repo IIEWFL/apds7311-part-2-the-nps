@@ -10,18 +10,42 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 
-// Registration Route
+/// Registration Route
 router.post('/register', async (req, res) => {
     console.log('Register route hit');
     try {
         const { username, fullName, idNumber, accountNumber, password } = req.body;
-    
+
+        // Define regex patterns
+        const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+        const fullNameRegex = /^[a-zA-Z\s]+$/;
+        const idNumberRegex = /^[0-9]{13}$/;
+        const accountNumberRegex = /^[0-9]{10,12}$/;
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+        // Validate the inputs with regex
+        if (!usernameRegex.test(username)) {
+            return res.status(400).json({ message: 'Invalid username. Must be 3-30 characters, alphanumeric, and can include underscores.' });
+        }
+        if (!fullNameRegex.test(fullName)) {
+            return res.status(400).json({ message: 'Invalid full name. Only letters and spaces are allowed.' });
+        }
+        if (!idNumberRegex.test(idNumber)) {
+            return res.status(400).json({ message: 'Invalid ID number. Must be a 13-digit number.' });
+        }
+        if (!accountNumberRegex.test(accountNumber)) {
+            return res.status(400).json({ message: 'Invalid account number. Must be 10-12 digits.' });
+        }
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ message: 'Invalid password. Must be at least 8 characters long, include at least one letter and one number.' });
+        }
+
         // Check if user already exists by account number
         const existingUser = await User.findOne({ accountNumber });
         if (existingUser) {
             return res.status(400).json({ message: 'User with this account number already exists' });
         }
-        
+
         // Hash Password
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -34,26 +58,41 @@ router.post('/register', async (req, res) => {
             password: hashedPassword
         });
         await user.save();
-    
+
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Internal Server Error', error: err.message });
     }
 });
 
-// Registration Route
+// Registration Route 
 router.post('/register/staff', async (req, res) => {
     console.log('Register route hit');
     try {
         const { username, fullName, password } = req.body;
-    
-        // Check if user already exists by username
-        const existingStaff = await Staff.findOne({ username });
 
-        if (existingStaff) {
-            return res.status(400).json({ message: 'User with this account number already exists' });
+        // Define regex patterns
+        const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+        const fullNameRegex = /^[a-zA-Z\s]+$/;
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+        // Validate inputs with regex
+        if (!usernameRegex.test(username)) {
+            return res.status(400).json({ message: 'Invalid username. Must be 3-30 characters, alphanumeric, and can include underscores.' });
         }
-        
+        if (!fullNameRegex.test(fullName)) {
+            return res.status(400).json({ message: 'Invalid full name. Only letters and spaces are allowed.' });
+        }
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ message: 'Invalid password. Must be at least 8 characters long, include at least one letter and one number.' });
+        }
+
+        // Check if staff member already exists by username
+        const existingStaff = await Staff.findOne({ username });
+        if (existingStaff) {
+            return res.status(400).json({ message: 'Staff member with this username already exists' });
+        }
+
         // Hash Password
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -64,8 +103,8 @@ router.post('/register/staff', async (req, res) => {
             password: hashedPassword
         });
         await staff.save();
-    
-        res.status(201).json({ message: 'User registered successfully' });
+
+        res.status(201).json({ message: 'Staff member registered successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Internal Server Error', error: err.message });
     }
