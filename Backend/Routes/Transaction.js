@@ -1,14 +1,14 @@
 import express from 'express';
 import bcrypt from 'bcrypt'; // In case you need it for other routes
-import Transaction from '../models/Transaction.js'; // Assuming Transaction model is in the models folder
+import Transaction from '../models/Transaction.js'; 
 import User from '../models/User.js';
-import authMiddleware from '../middleware/authMiddleware.js'; // Assuming you have a token authentication middleware
+import authMiddleware from '../middleware/authMiddleware.js'; 
 
 const router = express.Router();
 
 // Helper function for input validation using regex
 const validateAccountNumber = (accountNumber) => {
-    const accountNumberRegex = /^[0-9]{10}$/; // Example: Account number should be a 10-digit number
+    const accountNumberRegex = /^[0-9]{10}$/; 
     return accountNumberRegex.test(accountNumber);
 };
 
@@ -141,3 +141,8 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 export default router;
+
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/

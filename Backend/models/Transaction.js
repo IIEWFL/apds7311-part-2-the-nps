@@ -1,5 +1,6 @@
 import mongoose from'mongoose';
 
+// Define the transaction schema
 const TransactionSchema = new mongoose.Schema({
     fromAccount: {
         type: mongoose.Schema.Types.ObjectId,
@@ -47,4 +48,9 @@ const TransactionSchema = new mongoose.Schema({
         default: 'pending',
     },
 });
+
+// Export the transaction model
 export default mongoose.model('Transaction', TransactionSchema);
+
+// This method was adapted from the Mongoose documentation on defining schemas
+// https://mongoosejs.com/docs/guide.html

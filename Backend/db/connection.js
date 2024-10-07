@@ -1,22 +1,32 @@
-import mongoose from'mongoose';
+import mongoose from 'mongoose'; // Import the mongoose library to handle MongoDB connections
 
-const MONGO_URI = process.env.MONGO_URI;
-const ATLAS_URI = process.env.ATLAS_URI;
+// Load MongoDB URIs from environment variables
+const MONGO_URI = process.env.MONGO_URI;  // Primary MongoDB URI from environment
+const ATLAS_URI = process.env.ATLAS_URI;  // Backup MongoDB URI (for example, MongoDB Atlas)
 
 const connectDB = async () => {
     try {
-     await mongoose.connect(MONGO_URI);
-     console.log(`connected ${MONGO_URI}`);
-    } catch(err) {
+        // Attempt to connect to the primary MongoDB instance using MONGO_URI
+        await mongoose.connect(MONGO_URI); 
+        console.log(`Connected to MongoDB at ${MONGO_URI}`);
+    } catch (err) {
+        // If the connection to MONGO_URI fails, log the error
         console.error(`Failed to connect to ${MONGO_URI}: ${err.message}`);
-        console.log(`Trying to connect to ${ATLAS_URI}`);
+
+        // If the primary connection fails, attempt to connect to the backup (Atlas) URI
+        console.log(`Trying to connect to MongoDB at ${ATLAS_URI}`);
         try {
-            await mongoose.connect(ATLAS_URI);
-            console.log(`connected ${ATLAS_URI}`);
-        }catch(err){
-            console.error('Failed to connect to MongoDB', err);
-            process.exit(1);
+            await mongoose.connect(ATLAS_URI); // Attempt connection to ATLAS_URI
+            console.log(`Connected to MongoDB at ${ATLAS_URI}`);
+        } catch (err) {
+            // If both connection attempts fail, log the error and exit the application
+            console.error('Failed to connect to MongoDB at both URIs', err);
+            process.exit(1);  // Exit the process with a failure code (1) indicating the application should stop
         }
     }
-}
-export default connectDB;
+};
+
+export default connectDB;  // Export the connectDB function for use in other parts of the application
+
+// This method was adapted from the MongoDB documentation on handling connections
+// https://www.mongodb.com/docs/manual/reference/connection-string/

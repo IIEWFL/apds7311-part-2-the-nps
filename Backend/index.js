@@ -35,3 +35,6 @@ const options = {
 https.createServer(options, app).listen(PORT, () => {
     console.log(`Secure server is running on https://localhost:${PORT}`);
 });
+
+// This method was adapted from various tutorials on setting up an HTTPS server with Express
+// https://adamtheautomator.com/https-nodejs/
