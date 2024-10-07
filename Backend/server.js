@@ -20,21 +20,27 @@ dotenv.config();
 const key = fs.readFileSync('./Keys/server.key');
 const cert = fs.readFileSync('./Keys/server.cert'); // if you have a certificate file as well
 
-
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json()); // Allows the server to parse JSON bodies
-// app.use(helmet()) // Extra layer of security to your API
-// app.use(morgan('combined')); // request logger middleware
+app.use(helmet()) // Extra layer of security to your API
+app.use(morgan('combined')); // request logger middleware
 
+// Function to connect to MongoDB
+const connectToDatabase = async () => {
+  try {
+    // Remove deprecated options
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+  }
+};
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+connectToDatabase();
 
 // Basic Route
 app.get('/', (req, res) => {
@@ -231,6 +237,6 @@ const options = {
 
 // Start the server
 // Start the server
-https.createServer({ key: key, cert: cert }, app).listen(PORT, () => {
+https.createServer(options, app).listen(PORT, () => {
   console.log(`Https Server is running on port ${PORT}`);
 });
