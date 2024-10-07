@@ -31,7 +31,7 @@ function Login() {
 
  const handleLoginClick = async (values, { setSubmitting, setErrors }) => {
   try {
-    const response = await axios.post('/api/auth/login', {
+    const response = await axios.post('/api/auth/login/user', {
       username: values.username,
       accountNumber: values.accountNumber,
       password: values.password,

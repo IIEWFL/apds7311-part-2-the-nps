@@ -10,7 +10,7 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 
-/// Registration Route
+// Registration Route
 router.post('/register', async (req, res) => {
     console.log('Register route hit');
     try {
@@ -21,8 +21,7 @@ router.post('/register', async (req, res) => {
         const fullNameRegex = /^[a-zA-Z\s]+$/;
         const idNumberRegex = /^[0-9]{13}$/;
         const accountNumberRegex = /^[0-9]{10,12}$/;
-        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
+     
         // Validate the inputs with regex
         if (!usernameRegex.test(username)) {
             return res.status(400).json({ message: 'Invalid username. Must be 3-30 characters, alphanumeric, and can include underscores.' });
@@ -36,9 +35,7 @@ router.post('/register', async (req, res) => {
         if (!accountNumberRegex.test(accountNumber)) {
             return res.status(400).json({ message: 'Invalid account number. Must be 10-12 digits.' });
         }
-        if (!passwordRegex.test(password)) {
-            return res.status(400).json({ message: 'Invalid password. Must be at least 8 characters long, include at least one letter and one number.' });
-        }
+    
 
         // Check if user already exists by account number
         const existingUser = await User.findOne({ accountNumber });

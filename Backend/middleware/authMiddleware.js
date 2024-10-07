@@ -13,6 +13,7 @@ const authMiddleware = (req, res, next) => {
 
     // If no Authorization header is present, reject the request with a 401 status
     if (!authHeader) {
+        console.warn('No authorization header, access denied'); // Log a warning for missing header
         return res.status(401).json({ message: 'No authorization header, access denied' });
     }
 
@@ -21,6 +22,7 @@ const authMiddleware = (req, res, next) => {
     
     // If the Authorization header doesn't consist of two parts, reject with a 401 error
     if (parts.length !== 2) {
+        console.warn('Authorization header format must be Bearer [Token], access denied'); // Log a warning
         return res.status(401).json({ message: 'Authorization header format must be Bearer [Token]' });
     }
 
@@ -30,33 +32,38 @@ const authMiddleware = (req, res, next) => {
 
     // If no token is provided after "Bearer", reject the request with a 401 status
     if (!token) {
+        console.warn('No token provided, access denied'); // Log a warning
         return res.status(401).json({ message: 'No token provided, access denied' });
     }
 
     try {
         // Verify the JWT token using the secret stored in environment variables
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('Decoded', decoded);
+        console.log('Decoded Token:', decoded); // Log the decoded token
 
         // Attach the decoded token payload (user information) to the request object
         req.user = decoded;
 
         // Pass control to the next middleware or route handler
+        console.info('Token successfully verified, proceeding to next middleware'); // Log success
         next();
     } catch (err) {
         // If the token verification fails, log the error and handle different error types
-        console.error('Token verification failed:', err);
+        console.error('Token verification failed:', err); // Log error details
 
         // Handle invalid token errors
         if (err instanceof JsonWebTokenError) {
+            console.warn('Invalid token, access denied'); // Log a warning
             return res.status(401).json({ message: 'Invalid token, access denied' });
         } 
         // Handle token expiration errors
         else if (err instanceof TokenExpiredError) {
+            console.warn('Token expired, access denied'); // Log a warning
             return res.status(401).json({ message: 'Token expired, access denied' });
         }
 
         // Handle any other potential errors during authentication
+        console.error('Server error during authentication:', err); // Log the server error
         return res.status(401).json({ message: 'Server error during authentication', error: err });
     }
 };

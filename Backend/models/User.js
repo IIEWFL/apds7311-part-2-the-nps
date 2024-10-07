@@ -31,8 +31,7 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        match: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, // Minimum 8 characters, at least one letter and one number
-    },
+   },
 });
 // Export the User model
 export default mongoose.model('User', UserSchema);
