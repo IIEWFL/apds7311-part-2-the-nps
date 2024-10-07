@@ -29,7 +29,7 @@ function Payments_Client() {
   useEffect(() => {
     async function fetchTransactions() {
       try {
-        const response = await axios.get('/api/transactions'); // Adjust the API endpoint as needed
+        const response = await axios.get('https://localhost:5000/api'); // Adjust the API endpoint as needed
         setTransactions(response.data);
       } catch (error) {
         console.error('Error fetching transactions:', error);
@@ -41,9 +41,10 @@ function Payments_Client() {
   // Handle form submission
   const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
     try {
-      await axios.post('/api/transactions', values); // Post the form data to the backend
+      await axios.post('https://localhost:5000/api', values); // Post the form data to the backend
+      alert('This is a Windows alert message.');
       // Fetch and refresh the transactions after submitting a new one
-      const response = await axios.get('/api/transactions');
+      const response = await axios.get('https://localhost:5000/api');
       setTransactions(response.data); // Update the transaction history
       resetForm(); // Reset the form fields after submission
     } catch (err) {
@@ -59,6 +60,8 @@ function Payments_Client() {
 
   // Handle cancel button - reset the form fields
   const handleCancel = (resetForm) => {
+
+    alert('This is a Windows alert message.');
     resetForm(); // Reset the form fields when cancel is clicked
   };
 
@@ -77,6 +80,7 @@ function Payments_Client() {
             type: '',
             currency: '',
             paymentMethod: '',
+            swiftcode: ''
           }}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
@@ -119,16 +123,7 @@ function Payments_Client() {
                 <ErrorMessage name="amount" component="div" className="error-message" />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="type">Transaction Type:</label>
-                <Field as="select" id="type" name="type" className="input-field">
-                  <option value="">Select transaction type</option>
-                  <option value="deposit">Deposit</option>
-                  <option value="withdrawal">Withdrawal</option>
-                </Field>
-                <ErrorMessage name="type" component="div" className="error-message" />
-              </div>
-
+            
               <div className="form-group">
                 <label htmlFor="currency">Currency:</label>
                 <Field as="select" id="currency" name="currency" className="input-field">
@@ -156,6 +151,18 @@ function Payments_Client() {
                   <option value="paypal">Paypal</option>
                 </Field>
                 <ErrorMessage name="paymentMethod" component="div" className="error-message" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="toAccount">SWITF Code:</label>
+                <Field
+                  type="text"
+                  id="toAccount"
+                  name="toAccount"
+                  placeholder="Enter to account"
+                  className="input-field"
+                />
+                <ErrorMessage name="toAccount" component="div" className="error-message" />
               </div>
 
               {errors.serverError && <p className="error-message">{errors.serverError}</p>}

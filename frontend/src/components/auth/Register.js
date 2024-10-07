@@ -32,18 +32,24 @@ function Register() {
       const response = await axios.post('https://localhost:5000/api/auth/register', {
         username: values.username,
         fullName: values.fullName,
-        accountNumber: values.accountNumber,
         idNumber: values.idNumber,
+        accountNumber: values.accountNumber,
         password: values.password,
-      });
+        
+      }
+    );
+
+
 
       // Optionally, redirect to login or another page after successful registration
       navigate('/login'); // Redirect to login page after successful registration
     } catch (err) {
+      console.error('Registration error:', err); // Add this to check the full error
       if (err.response) {
         setErrors({ serverError: err.response.data.message });
-      } else {
-        setErrors({ serverError: 'Something went wrong. Please try again.' });
+      } 
+      else {
+        setErrors({ serverError: 'Something went wrong. Please try again.'  + err });
       }
     } finally {
       setSubmitting(false);

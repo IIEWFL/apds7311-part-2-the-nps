@@ -12,7 +12,7 @@ function Payments_Staff() {
   useEffect(() => {
     async function fetchTransactions() {
       try {
-        const response = await axios.get('/api/transactions'); // Adjust the API endpoint as needed
+        const response = await axios.get('/api'); // Adjust the API endpoint as needed
         setTransactions(response.data);
       } catch (error) {
         console.error('Error fetching transactions:', error);
@@ -30,7 +30,7 @@ function Payments_Staff() {
   const handleApprove = async () => {
     if (selectedTransaction) {
       try {
-        await axios.put(`/api/transactions/${selectedTransaction._id}/approve`); // Adjust the API endpoint as needed
+        await axios.put(`/api/${selectedTransaction._id}/approve`); // Adjust the API endpoint as needed
         setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id));
         setSelectedTransaction(null);
       } catch (error) {
@@ -43,7 +43,7 @@ function Payments_Staff() {
   const handleCancel = async () => {
     if (selectedTransaction) {
       try {
-        await axios.delete(`/api/transactions/${selectedTransaction._id}`); // Adjust the API endpoint as needed
+        await axios.delete(`/api/${selectedTransaction._id}`); // Adjust the API endpoint as needed
         setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id));
         setSelectedTransaction(null);
       } catch (error) {
