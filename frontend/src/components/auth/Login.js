@@ -29,33 +29,36 @@ function Login() {
     navigate('/'); // Navigate back to the Welcome page
   };
 
- const handleLoginClick = async (values, { setSubmitting, setErrors }) => {
-  try {
-    const response = await axios.post('/api/auth/login/user', {
-      username: values.username,
-      accountNumber: values.accountNumber,
-      password: values.password,
-      userType: userType
-    });
+  const handleLoginClick = async (values, { setSubmitting, setErrors }) => {
+    try {
+      // Dynamically set the API path based on the userType
+      const apiPath = userType === 'Client' ? 'https://localhost:5000/api/auth/login/user' : 'https://localhost:5000/api/auth/login/staff';
 
-    localStorage.setItem('token', response.data.token);
-          // Navigate to the appropriate payments page based on user type
-          if (userType === 'Client') {
-            navigate('/payments_clients'); // Navigate to Payments_Clients
-          } else {
-            navigate('/payments_staff'); // Navigate to Payments_Staff
-          }
-        
-  } catch (err) {
-    if (err.response) {
-      setErrors({ serverError: err.response.data.message });
-    } else {
-      setErrors({ serverError: 'Something went wrong. Please try again.' });
+      // Make the POST request to the appropriate path
+      const response = await axios.post(apiPath, {
+        username: values.username,
+        accountNumber: userType === 'Client' ? values.accountNumber : undefined, // Only send accountNumber for "Client"
+        password: values.password,
+      });
+
+      localStorage.setItem('token', response.data.token);
+
+      // Navigate to the correct payments page based on user type
+      if (userType === 'Client') {
+        navigate('/payments'); // Navigate to Payments_Clients for "Client"
+      } else {
+        navigate('/payment'); // Navigate to Payments_Staff for "Staff"
+      }
+    } catch (err) {
+      if (err.response) {
+        setErrors({ serverError: err.response.data.message });
+      } else {
+        setErrors({ serverError: 'Something went wrong. Please try again.' });
+      }
+    } finally {
+      setSubmitting(false);
     }
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
   return (
     <div className="container"> {/* Added a container class here */}

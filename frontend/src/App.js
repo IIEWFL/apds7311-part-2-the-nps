@@ -14,9 +14,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Welcome />} />
           <Route path="/login" element={<Login />} /> {/* Route for the Login component */}
-          <Route path="/register" element={<Register />} />
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/payment" element={<Payment />} />
+          <Route path="/register" element={<Register />} /> {/* Route for the Login component */}
+          <Route path="/payments" element={<Payments />} /> {/* Route for the Login component */}
+          <Route path="/payment" element={<Payment />} /> {/* Route for the Login component */}
         </Routes>
       </div>
     </Router>
