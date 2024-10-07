@@ -5,9 +5,9 @@ import https from 'https';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import fs from 'fs';
-import connectDB from './db/connection.js'; // Ensure this path is correct
-import authRoutes from './Routes/auth.js'; // Ensure the route paths are correct
-import transactionRoutes from './Routes/Transaction.js'; // Ensure this route is correct
+import connectDB from './db/connection.js'; 
+import authRoutes from './Routes/auth.js'; 
+import transactionRoutes from './Routes/Transaction.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
