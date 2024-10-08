@@ -24,11 +24,11 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Create a new transaction (for customers)
-router.post('/', authMiddleware, async (req, res) => {
-    const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode } = req.body;
+router.post('/create', authMiddleware, async (req, res) => {
+    const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode, paymentMethod } = req.body;
 
     // Input validation
-    if (!fromAccountNumber || !toAccountNumber || !amount || !currency || !swiftCode ) {
+    if (!fromAccountNumber || !toAccountNumber || !amount || !currency || !swiftCode || !paymentMethod) {
         console.warn('Missing fields in request:', req.body);
         return res.status(400).json({ message: 'Fill in all fields' });
     }
@@ -37,37 +37,45 @@ router.post('/', authMiddleware, async (req, res) => {
     if (!validateSwiftCode(swiftCode)) {
         console.warn('Invalid SWIFT code:', swiftCode);
         return res.status(400).json({ message: 'Invalid SWIFT code' });
-    }
-
-    try {
+    }try {
         // Find users by account numbers
-        const fromAccount = await User.findOne({ accountNumber: fromAccountNumber });
-        const toAccount = await User.findOne({ accountNumber: toAccountNumber });
+        const fromUser = await User.findOne({ accountNumber: fromAccountNumber });
+        const toUser = await User.findOne({ accountNumber: toAccountNumber });
 
-        if (!fromAccount || !toAccount) {
-            console.warn('Account not found:', { fromAccountNumber, toAccountNumber });
-            return res.status(404).json({ message: 'Account not found' });
+        console.log('From User:', fromUser);
+        console.log('To User:', toUser);
+
+        // Check if both users were found
+        if (!fromUser || !toUser) {
+            const errorMessage = !fromUser && !toUser ? 'Both account numbers not found' :
+                                 !fromUser ? 'From account number not found' :
+                                 'To account number not found';
+            console.warn(errorMessage, { fromAccountNumber, toAccountNumber });
+            return res.status(404).json({ message: errorMessage });
         }
-
-        // Create transaction
-        const transaction = new Transaction({
-            fromAccount: fromAccount._id,
-            toAccount: toAccount._id,
-            amount: amount,
-            currency: currency,
-            swiftCode: swiftCode,
-            paymentMethod: 'bank_transfer', 
-            
-        });
-
-        await transaction.save();
-        console.log('Transaction created successfully:', transaction);
-        res.status(201).json({ message: 'Transaction created successfully', transaction });
-    } catch (err) {
-        console.error('Error creating transaction:', err.message);
-        res.status(500).json({ message: 'Internal Server Error', error: err.message });
-    }
+// Create transaction
+const transaction = new Transaction({
+    fromAccount: fromUser._id,
+    toAccount: toUser._id,
+    fromAccountNumber,
+    toAccountNumber,
+    amount: amount,
+    currency: currency,
+    swiftCode: swiftCode,
+    paymentMethod: paymentMethod, 
+    
 });
+
+await transaction.save();
+console.log('Transaction created successfully:', transaction);
+res.status(201).json({ message: 'Transaction created successfully', transaction });
+} catch (err) {
+console.error('Error creating transaction:', err.message);
+res.status(500).json({ message: 'Internal Server Error', error: err.message });
+}
+});
+
+
 
 // Employees verify and submit transactions to SWIFT
 router.put('/verify/:id', authMiddleware, async (req, res) => {
