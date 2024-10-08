@@ -1,4 +1,5 @@
 import express from 'express';
+import Joi from 'joi';
 import Transaction from '../models/Transaction.js'; 
 import User from '../models/User.js';
 import authMiddleware from '../middleware/authMiddleware.js';
@@ -18,6 +19,15 @@ const validateAccountNumber = (accountNumber) => {
     return accountNumberRegex.test(accountNumber);
 };
 
+// Validation schema for transactions
+const transactionSchema = Joi.object({
+    fromAccountNumber: Joi.string().alphanum().min(8).max(12).required(),
+    toAccountNumber: Joi.string().alphanum().min(8).max(12).required(),
+    amount: Joi.number().positive().precision(2).required(),
+    currency: Joi.string().length(3).required(), // ISO currency codes
+    swiftCode: Joi.string().regex(/^[A-Z0-9]{8,11}$/).required(),
+    paymentMethod: Joi.string().valid('bank_transfer', 'credit_card', 'paypal').required(),
+});
 
 // Get all transactions (for employees)
 router.get('/', authMiddleware, async (req, res) => {
@@ -33,13 +43,14 @@ router.get('/', authMiddleware, async (req, res) => {
 
 // Create a new transaction (for customers)
 router.post('/create', authMiddleware, async (req, res) => {
-    const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode, paymentMethod } = req.body;
-
-    // Input validation
-    if (!fromAccountNumber || !toAccountNumber || !amount || !currency || !swiftCode || !paymentMethod) {
-        console.warn('Missing fields in request:', req.body);
-        return res.status(400).json({ message: 'Fill in all fields' });
+    // Validate input
+    const { error } = transactionSchema.validate(req.body);
+    if (error) {
+        console.warn('Invalid input:', error.details);
+        return res.status(400).json({ message: 'Invalid input', details: error.details });
     }
+
+    const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode, paymentMethod } = req.body;
 
     // Validate SWIFT code
     if (!validateSwiftCode(swiftCode)) {
