@@ -19,6 +19,7 @@ const StaffSchema = new mongoose.Schema({
         type: String,
         required: true
        // match: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{256,}$/, // Minimum 8 characters, at least one letter and one number
+
     },
 });
 // Export the Staff model
