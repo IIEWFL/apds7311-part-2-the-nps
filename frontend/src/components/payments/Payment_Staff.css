@@ -57,7 +57,6 @@
 
 .approve-button {
   background-color: #14c63b; /* Green background for approve */
-  color: black; /* Set text color to black */
 }
 
 .approve-button:hover {
@@ -66,7 +65,6 @@
 
 .cancel-button {
   background-color: #f44336; /* Red background for cancel */
-  color: black; /* Set text color to black */
 }
 
 .cancel-button:hover {
@@ -75,12 +73,10 @@
 
 .back-button {
   background-color: #008cba; /* Blue background */
-  color: black; /* Set text color to black */
 }
 
 .save-button {
   background-color: #007bff; /* Blue background for save */
-  color: black; /* Set text color to black */
 }
 
 .save-button:hover {
@@ -119,3 +115,12 @@
 .transaction-table tr:hover {
   background-color: #4aa9f79f; /* Highlight row on hover */
 }
+
+  
+  /* This CSS was adapted from various tutorials on web design and styling best practices */
+/*
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/ */
+

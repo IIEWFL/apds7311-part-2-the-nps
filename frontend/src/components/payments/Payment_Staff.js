@@ -4,9 +4,9 @@ import axios from 'axios';
 import './Payment_Staff.css'; // Import your CSS file for styling
 
 function Payments_Staff() {
-  const navigate = useNavigate();
-  const [transactions, setTransactions] = useState([]);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const navigate = useNavigate(); // Hook for navigating
+  const [transactions, setTransactions] = useState([]); // State for storing transactions
+  const [selectedTransaction, setSelectedTransaction] = useState(null); // State for the selected transaction
 
   // Fetch transactions when the component is mounted
   useEffect(() => {
@@ -63,20 +63,19 @@ function Payments_Staff() {
           status: 'approved', // Update the status to approved
         }, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Include token
           },
         });
 
         // Update the local state to reflect the change
-        setTransactions(transactions.map(transaction => 
-          transaction._id === selectedTransaction._id 
-            ? { ...transaction, status: 'approved' } 
+        setTransactions(transactions.map(transaction =>
+          transaction._id === selectedTransaction._id
+            ? { ...transaction, status: 'approved' }
             : transaction
         ));
-
-        setSelectedTransaction(null);
+        setSelectedTransaction(null); // Clear the selected transaction
       } catch (error) {
-        console.error('Error approving transaction:', error);
+        console.error('Error approving transaction:', error); // Log any errors
       }
     } else {
       console.warn('No transaction selected for approval.');
@@ -95,14 +94,14 @@ function Payments_Staff() {
         // Send a request to save the transaction (you may need to modify the endpoint)
         await axios.post('https://localhost:5000/api/save', selectedTransaction, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Include token
           },
         });
 
         console.log('Transaction saved successfully.');
         // Optionally, refresh the transaction list or provide feedback to the user
       } catch (error) {
-        console.error('Error saving transaction:', error);
+        console.error('Error saving transaction:', error); // Log any errors
       }
     } else {
       console.warn('No transaction selected for saving.');
@@ -175,3 +174,9 @@ function Payments_Staff() {
 }
 
 export default Payments_Staff;
+
+/* This code was adapted from various tutorials on React, Axios, and useEffect for data fetching and state management */
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/
