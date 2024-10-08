@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';
 import authMiddleware from '../middleware/authMiddleware.js';
@@ -8,7 +9,17 @@ const router = express.Router();
 // Helper function for SWIFT code validation
 const validateSwiftCode = (swiftCode) => {
     const swiftCodeRegex = /^[A-Z0-9]{8,11}$/; 
-    return swiftCodeRegex.test(swiftCode);
+    return typeof swiftCode == 'string' && swiftCodeRegex.test(swiftCode);
+};
+
+// Helper function to sanitize and validate MongoDB ID
+const isValidObjectId = (id) => {
+    return mongoose.Types.ObjectId.isValid(id);
+};
+
+// Helper function to sanitize account numbers
+const sanitizeAccountNumber = (accountNumber) => {
+    return typeof accountNumber === 'string' ? accountNumber.toString().trim() : '';
 };
 
 // Get all transactions (for employees)
@@ -19,7 +30,7 @@ router.get('/get', authMiddleware, async (req, res) => {
         res.status(200).json({ transactions });
     } catch (err) {
         console.error('Error fetching transactions:', err.message);
-        res.status(500).json({ message: 'Internal Server Error', error: err.message });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
@@ -92,15 +103,24 @@ router.put('/status/:id', authMiddleware, async (req, res) => {
 // Employees verify and submit transactions to SWIFT
 router.put('/verify/:id', authMiddleware, async (req, res) => {
     try {
-        const transaction = await Transaction.findById(req.params.id);
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid transaction ID' });
+        }
+
+        const transaction = await Transaction.findOneAndUpdate(
+            { 
+                _id: req.params.id,
+                status: { $ne: 'completed' }
+            },
+            { $set: { status: 'verified' } },
+            { new: true }
+        ).lean();
 
         if (!transaction) {
             return res.status(404).json({ message: 'Transaction not found' });
         }
 
-        transaction.status = 'verified';
-        await transaction.save();
-        res.status(200).json({ message: 'Transaction verified and ready to submit to SWIFT', transaction });
+        res.status(200).json({ message: 'Transaction verified and ready to submit to SWIFT' });
     } catch (err) {
         res.status(500).json({ message: 'Internal Server Error', error: err.message });
     }
@@ -144,3 +164,4 @@ router.get('/my-transactions', authMiddleware, async (req, res) => {
 });
 
 export default router;
+

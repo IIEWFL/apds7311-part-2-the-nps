@@ -1,3 +1,4 @@
+/* General body styling */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -5,6 +6,7 @@ body {
   padding: 0;
 }
 
+/* Container for the login form */
 .login-container {
   display: flex;
   justify-content: center;
@@ -14,6 +16,7 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Styling for the login box */
 .login-box {
   background: white;
   border-radius: 10px;
@@ -22,6 +25,7 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Title styling for the login form */
 .login-title {
   text-align: center;
   margin-bottom: 20px;
@@ -29,6 +33,7 @@ body {
   color: #333;
 }
 
+/* Description styling for the login form */
 .login-description {
   text-align: center;
   margin-bottom: 20px;
@@ -105,3 +110,10 @@ label {
 .back-button:hover {
   background-color: #5a6268;
 }
+
+/* This CSS was adapted from various tutorials on web design and styling best practices */
+/*
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/ */

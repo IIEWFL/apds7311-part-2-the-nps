@@ -5,6 +5,9 @@ import axios from 'axios';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
+// For more information, visit: https://reactrouter.com/en/main/start/overview
+// Additional reference: https://ui.dev/react-router-tutorial
+
 // Dynamic validation schema using Yup
 const validationSchema = (userType) => Yup.object({
   username: Yup.string()
@@ -47,9 +50,11 @@ function Login() {
         accountNumber: userType === 'Client' ? values.accountNumber : undefined, // Only send accountNumber for "Client"
       });
 
+
       console.log("Response data:", response.data); // Log response data
 
       // Store the token in local storage
+
       localStorage.setItem('token', response.data.token);
 
       // Navigate to the correct payments page based on user type
@@ -59,7 +64,9 @@ function Login() {
         navigate('/payment'); // Navigate to Payments_Staff for "Staff"
       }
     } catch (err) {
+
       console.error("Login error:", err); // Log the error
+
       if (err.response) {
         // Display specific error message from server
         setErrors({ serverError: err.response.data.message || 'Invalid login details.' });
@@ -67,21 +74,21 @@ function Login() {
         setErrors({ serverError: 'Something went wrong. Please try again.' });
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); // Stop the form submission state
     }
   };
 
   return (
-    <div className="container"> {/* Added a container class here */}
+    <div className="container"> {/* Container for the login form */}
       <div className="login-container">
         <div className="login-box">
           <h1 className="login-title">Login</h1>
           <p className="login-description">Please enter your login details below.</p>
 
           <Formik
-            initialValues={{ username: '', accountNumber: '', password: '' }}
-            validationSchema={validationSchema(userType)}
-            onSubmit={handleLoginClick}
+            initialValues={{ username: '', accountNumber: '', password: '' }} // Initial form values
+            validationSchema={validationSchema(userType)} // Validation schema based on user type
+            onSubmit={handleLoginClick} // Form submission handler
           >
             {({ isSubmitting, errors }) => (
               <Form>
@@ -158,3 +165,9 @@ function Login() {
 }
 
 export default Login;
+
+/* This code was adapted from various tutorials on React, Formik, and Yup for form handling and validation */
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/

@@ -4,9 +4,9 @@ import axios from 'axios';
 import './Payment_Staff.css'; // Import your CSS file for styling
 
 function Payments_Staff() {
-  const navigate = useNavigate();
-  const [transactions, setTransactions] = useState([]);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const navigate = useNavigate(); // Hook for navigating
+  const [transactions, setTransactions] = useState([]); // State for storing transactions
+  const [selectedTransaction, setSelectedTransaction] = useState(null); // State for the selected transaction
 
   // Fetch transactions when the component is mounted
   useEffect(() => {
@@ -57,31 +57,25 @@ function Payments_Staff() {
       console.log('Approving transaction:', selectedTransaction);
       const token = localStorage.getItem('token'); // Retrieve the auth token
 
-      // Log the token and request config
-      console.log('Token:', token);
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      console.log('Request config:', config);
-
       try {
         // Send a request to approve the transaction
         await axios.put(`https://localhost:5000/api/status/${selectedTransaction._id}`, {
           status: 'approved', // Update the status to approved
-        }, config); // Include the config here
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token
+          },
+        });
 
         // Update the local state to reflect the change
-        setTransactions(transactions.map(transaction => 
-          transaction._id === selectedTransaction._id 
-            ? { ...transaction, status: 'approved' } 
+        setTransactions(transactions.map(transaction =>
+          transaction._id === selectedTransaction._id
+            ? { ...transaction, status: 'approved' }
             : transaction
         ));
-
-        setSelectedTransaction(null);
+        setSelectedTransaction(null); // Clear the selected transaction
       } catch (error) {
-        console.error('Error approving transaction:', error);
+        console.error('Error approving transaction:', error); // Log any errors
       }
     } else {
       console.warn('No transaction selected for approval.');
@@ -94,31 +88,25 @@ function Payments_Staff() {
       console.log('Canceling transaction:', selectedTransaction);
       const token = localStorage.getItem('token'); // Retrieve the auth token
 
-      // Log the token and request config
-      console.log('Token:', token);
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      console.log('Request config:', config);
-
       try {
         // Send a request to cancel the transaction
         await axios.put(`https://localhost:5000/api/status/${selectedTransaction._id}/cancel`, {
           status: 'declined', // Update the status to declined
-        }, config); // Include the config here
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token
+          },
+        });
 
         // Update the local state to reflect the change
-        setTransactions(transactions.map(transaction => 
-          transaction._id === selectedTransaction._id 
-            ? { ...transaction, status: 'declined' } 
+        setTransactions(transactions.map(transaction =>
+          transaction._id === selectedTransaction._id
+            ? { ...transaction, status: 'declined' }
             : transaction
         ));
-
-        setSelectedTransaction(null);
+        setSelectedTransaction(null); // Clear the selected transaction
       } catch (error) {
-        console.error('Error canceling transaction:', error);
+        console.error('Error canceling transaction:', error); // Log any errors
       }
     } else {
       console.warn('No transaction selected for cancelation.');
@@ -148,9 +136,9 @@ function Payments_Staff() {
           <tbody>
             {transactions.length > 0 ? (
               transactions.map(transaction => (
-                <tr 
-                  key={transaction._id} 
-                  onClick={() => handleSelectTransaction(transaction)} 
+                <tr
+                  key={transaction._id}
+                  onClick={() => handleSelectTransaction(transaction)}
                   className={selectedTransaction === transaction ? 'selected' : ''}
                 >
                   <td>
@@ -190,3 +178,9 @@ function Payments_Staff() {
 }
 
 export default Payments_Staff;
+
+/* This code was adapted from various tutorials on React, Axios, and useEffect for data fetching and state management */
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/
