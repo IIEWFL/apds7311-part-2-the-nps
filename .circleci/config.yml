@@ -12,10 +12,10 @@ jobs:
       - checkout:
           path: ~/project
       - node/install-packages:
-          pkg-manager: yarn
+          pkg-manager: npm
       - run:
           name: Run tests
-          command: yarn test --passWithNoTests
+          command: npm test --passWithNoTests
   build-node:
     # Build node project
     executor: node/default
@@ -24,9 +24,9 @@ jobs:
       - checkout:
           path: ~/project
       - node/install-packages:
-          pkg-manager: yarn
+          pkg-manager: npm
       - run:
-          command: yarn run build
+          command: npm run build
       - run:
           name: Create the ~/artifacts directory if it doesn't exist
           command: mkdir -p ~/artifacts
