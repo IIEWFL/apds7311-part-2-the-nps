@@ -40,7 +40,7 @@ const sessionConfig = {
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ 
-        mongoUrl: process.env.MONGODB_URI,
+        mongoUrl: process.env.MONGO_URI,
         touchAfter: 24 * 3600 // Only update session once in 24 hours
     }),
     cookie: {
