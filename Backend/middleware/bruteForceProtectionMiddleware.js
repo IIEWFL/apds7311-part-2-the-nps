@@ -15,7 +15,7 @@ const BruteForceModel = mongoose.model("bruceforce", bruceForceSchema);
 
 const store = new MongooseStore(BruteForceModel);
 
-const brusteForce = new ExpressBrute (store, {
+const bruteForce = new ExpressBrute (store, {
     freeRetries: 2,
     minWait: 1 *60 * 1000,
     maxWait: 2 * 60 *1000,
@@ -25,4 +25,4 @@ message: "Too many failed attempts. Please try again later.", nextValidRequestDa
         })
     }
 });
-export default brusteForce;
+export default bruteForce;
