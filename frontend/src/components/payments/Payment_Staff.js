@@ -28,17 +28,11 @@ function Payments_Staff() {
           },
         });
 
-        // Log the API response
-        console.log('API response received:', response.data);
         // Update the state with the transactions from the response
+        console.log('API response received:', response.data);
         setTransactions(response.data.transactions); // Set the transactions state correctly
       } catch (error) {
         console.error('Error fetching transactions:', error);
-
-        // Log the error response for more detail
-        if (error.response) {
-          console.error('Error response:', error.response.data);
-        }
 
         // Handle the 401 Unauthorized error
         if (error.response && error.response.status === 401) {
@@ -88,6 +82,8 @@ function Payments_Staff() {
     }
   };
 
+  
+
   // Function to save the selected transaction
   const handleSave = async () => {
     if (selectedTransaction) {
@@ -95,7 +91,7 @@ function Payments_Staff() {
       const token = localStorage.getItem('token'); // Retrieve the auth token
 
       try {
-        // Send a request to save the transaction
+        // Send a request to save the transaction (you may need to modify the endpoint)
         await axios.post('https://localhost:5000/api/save', selectedTransaction, {
           headers: {
             Authorization: `Bearer ${token}`, // Include token

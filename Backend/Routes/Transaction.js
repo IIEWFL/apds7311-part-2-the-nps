@@ -43,6 +43,9 @@ router.get('/get', authMiddleware, async (req, res) => {
 // Create a new transaction (for customers)
 router.post('/create', authMiddleware, async (req, res) => {
 
+    const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode, paymentMethod, status} = req.body;
+
+
     // Validate input using Joi
     const { error } = transactionSchema.validate(req.body);
     if (error) {
@@ -91,12 +94,15 @@ router.post('/create', authMiddleware, async (req, res) => {
         const transaction = new Transaction({
             fromAccount: fromUser._id,
             toAccount: toUser._id,
+
             fromAccountNumber: sanitizedFromAccount,
             toAccountNumber: sanitizedToAccount,
             amount: amount,
             currency: sanitizedCurrency,
             swiftCode: sanitizedSwiftCode,
             paymentMethod: paymentMethod.toString().trim(), 
+              status
+
 
             
         });
