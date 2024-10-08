@@ -19,6 +19,7 @@ const validationSchema = Yup.object({
   paymentMethod: Yup.string()
     .oneOf(['credit_card', 'debit_card', 'bank_transfer', 'paypal'], 'Invalid payment method')
     .required('Payment method is required'),
+  swiftcode: Yup.string().required('Swift code is required'),
 });
 
 function Payments_Client() {
@@ -41,27 +42,36 @@ function Payments_Client() {
   // Handle form submission
   const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
     try {
-      await axios.post('https://localhost:5000/api', values); // Post the form data to the backend
-      alert('This is a Windows alert message.');
-      // Fetch and refresh the transactions after submitting a new one
-      const response = await axios.get('https://localhost:5000/api');
-      setTransactions(response.data); // Update the transaction history
-      resetForm(); // Reset the form fields after submission
+      await axios.post('https://localhost:5000/api', // Post the form data to the backend
+        {
+          fromAccount: values.fromAccount,
+          toAccount: values.toAccount,
+          amount: values.amount,
+          currency: values.currency,
+          swiftCode: values.swiftcode,
+          paymentMethod: values.paymentMethod
+        }
+      );
+
+      alert('Payment successful.');
+
+      // Optionally reset the form after submission
+      resetForm();
     } catch (err) {
       if (err.response) {
-        setErrors({ serverError: err.response.data.message }); // Display server error
+        alert(err.response.data.message);
+        setErrors({ serverError: err.response.data.message });
       } else {
         setErrors({ serverError: 'Something went wrong. Please try again.' });
       }
     } finally {
-      setSubmitting(false); // Stop the submitting state
+      setSubmitting(false);
     }
   };
 
   // Handle cancel button - reset the form fields
   const handleCancel = (resetForm) => {
-
-    alert('This is a Windows alert message.');
+    alert('Transaction canceled.');
     resetForm(); // Reset the form fields when cancel is clicked
   };
 
@@ -88,10 +98,10 @@ function Payments_Client() {
           {({ isSubmitting, errors, resetForm }) => (
             <Form>
               <div className="form-group">
-                <label htmlFor="fromAccount">From Account:</label>
+                <label htmlFor="fromAccountId_Client">From Account:</label>
                 <Field
                   type="text"
-                  id="fromAccount"
+                  id="fromAccountId_Client"
                   name="fromAccount"
                   placeholder="Enter from account"
                   className="input-field"
@@ -100,10 +110,10 @@ function Payments_Client() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="toAccount">To Account:</label>
+                <label htmlFor="toAccountId_Client">To Account:</label>
                 <Field
                   type="text"
-                  id="toAccount"
+                  id="toAccountId_Client"
                   name="toAccount"
                   placeholder="Enter to account"
                   className="input-field"
@@ -112,10 +122,10 @@ function Payments_Client() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="amount">Amount:</label>
+                <label htmlFor="amountId_Client">Amount:</label>
                 <Field
                   type="number"
-                  id="amount"
+                  id="amountId_Client"
                   name="amount"
                   placeholder="Enter amount"
                   className="input-field"
@@ -123,10 +133,9 @@ function Payments_Client() {
                 <ErrorMessage name="amount" component="div" className="error-message" />
               </div>
 
-            
               <div className="form-group">
-                <label htmlFor="currency">Currency:</label>
-                <Field as="select" id="currency" name="currency" className="input-field">
+                <label htmlFor="currencyId_Client">Currency:</label>
+                <Field as="select" id="currencyId_Client" name="currency" className="input-field">
                   <option value="">Select currency</option>
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
@@ -142,8 +151,8 @@ function Payments_Client() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="paymentMethod">Payment Method:</label>
-                <Field as="select" id="paymentMethod" name="paymentMethod" className="input-field">
+                <label htmlFor="paymentMethodId_Client">Payment Method:</label>
+                <Field as="select" id="paymentMethodId_Client" name="paymentMethod" className="input-field">
                   <option value="">Select payment method</option>
                   <option value="credit_card">Credit Card</option>
                   <option value="debit_card">Debit Card</option>
@@ -154,23 +163,34 @@ function Payments_Client() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="toAccount">SWITF Code:</label>
-                <Field
-                  type="text"
-                  id="toAccount"
-                  name="toAccount"
-                  placeholder="Enter to account"
-                  className="input-field"
-                />
-                <ErrorMessage name="toAccount" component="div" className="error-message" />
+                <label htmlFor="swiftcodeId_Client">Swift Code:</label>
+                <Field as="select" id="swiftcodeId_Client" name="swiftcode" className="input-field">
+                  <option value="">Select Swift Code</option>
+                  <option value="Absa Bank - ABSAZAJJ">Absa Bank - ABSAZAJJ</option>
+                  <option value="Standard Bank - SBZAZAJJ">Standard Bank - SBZAZAJJ</option>
+                  <option value="First National Bank (FNB) - FIRNZAJJ">First National Bank (FNB) - FIRNZAJJ</option>
+                  <option value="Nedbank - NEDSZAJJ">Nedbank - NEDSZAJJ</option>
+                  <option value="Capitec Bank - CABLZAJJ">Capitec Bank - CABLZAJJ</option>
+                  <option value="Investec Bank - INVZZAJJ">Investec Bank - INVZZAJJ</option>
+                  <option value="African Bank - AFSIZAJJ">African Bank - AFSIZAJJ</option>
+                  <option value="HSBC Bank - HSBCZAJJ">HSBC Bank - HSBCZAJJ</option>
+                  <option value="Rand Merchant Bank - RMBKZAJJ">Rand Merchant Bank - RMBKZAJJ</option>
+                </Field>
+                <ErrorMessage name="swiftcode" component="div" className="error-message" />
               </div>
 
               {errors.serverError && <p className="error-message">{errors.serverError}</p>}
 
               <div className="button-group">
-                <button type="submit" className="submit-button" disabled={isSubmitting}>
+                <button
+                  type="submit"
+                  className="submit-button"
+                  onClick={() => handleSubmit}
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? 'Processing...' : 'Make Payment'}
                 </button>
+
                 <button
                   type="button"
                   className="cancel-button"
@@ -195,30 +215,20 @@ function Payments_Client() {
               <th>From Account</th>
               <th>To Account</th>
               <th>Amount</th>
-              <th>Type</th>
               <th>Currency</th>
-              <th>Date</th>
-              <th>Status</th>
+              <th>Payment Method</th>
             </tr>
           </thead>
           <tbody>
-            {transactions.length > 0 ? (
-              transactions.map(transaction => (
-                <tr key={transaction._id}>
-                  <td>{transaction.fromAccount}</td>
-                  <td>{transaction.toAccount}</td>
-                  <td>{transaction.amount}</td>
-                  <td>{transaction.type}</td>
-                  <td>{transaction.currency}</td>
-                  <td>{new Date(transaction.transactionDate).toLocaleString()}</td>
-                  <td>{transaction.status}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7">No transactions found</td>
+            {transactions.map((transaction) => (
+              <tr key={transaction.id}>
+                <td>{transaction.fromAccount}</td>
+                <td>{transaction.toAccount}</td>
+                <td>{transaction.amount}</td>
+                <td>{transaction.currency}</td>
+                <td>{transaction.paymentMethod}</td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>

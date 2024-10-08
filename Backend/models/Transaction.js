@@ -47,16 +47,8 @@ const TransactionSchema = new mongoose.Schema({
         type: String,
         enum: ['credit_card', 'debit_card', 'bank_transfer', 'paypal'],
         required: true,
-    },
-    transactionDate: {
-        type: Date,
-        default: Date.now,
-    },
-    status: {
-        type: String,
-        enum: ['pending', 'verified', 'completed', 'failed'],
-        default: 'pending',
-    },
+    }
+    
 });
 
 // Export the transaction model
