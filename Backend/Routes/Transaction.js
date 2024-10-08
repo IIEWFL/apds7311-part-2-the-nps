@@ -2,6 +2,7 @@ import express from 'express';
 import Transaction from '../models/Transaction.js'; 
 import User from '../models/User.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import Joi from 'joi';
 
 const router = express.Router();
 
@@ -21,6 +22,16 @@ const sanitizeAccountNumber = (accountNumber) => {
     return typeof accountNumber === 'string' ? accountNumber.toString().trim() : '';
 };
 
+// Define a Joi schema for input validation
+const transactionSchema = Joi.object({
+    fromAccountNumber: Joi.string().alphanum().min(8).max(12).trim().required(),
+    toAccountNumber: Joi.string().alphanum().min(8).max(12).trim().required(),
+    amount: Joi.number().positive().precision(2).required(),
+    currency: Joi.string().length(3).uppercase().trim().required(), // Ensures it’s an ISO currency code
+    swiftCode: Joi.string().regex(/^[A-Z0-9]{8,11}$/).required(),
+    paymentMethod: Joi.string().valid('bank_transfer', 'credit_card', 'paypal').required(),
+});
+
 // Get all transactions (for employees)
 router.get('/', authMiddleware, async (req, res) => {
     try {
@@ -38,23 +49,19 @@ router.get('/', authMiddleware, async (req, res) => {
 
 // Create a new transaction (for customers)
 router.post('/create', authMiddleware, async (req, res) => {
+    // Validate input using Joi
+    const { error } = transactionSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ message: 'Invalid input', details: error.details });
+    }
+
     const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode, paymentMethod } = req.body;
 
-    // Input validation
-    if (!fromAccountNumber || !toAccountNumber || !amount || !currency || !swiftCode || !paymentMethod) {
-        console.warn('Missing fields in request:', req.body);
-        return res.status(400).json({ message: 'Fill in all fields' });
-    }
-
-    // Sanitize inputs
-    const sanitizedFromAccount = sanitizeAccountNumber(fromAccountNumber);
-    const sanitizedToAccount = sanitizeAccountNumber(toAccountNumber);
-    
-    // Validate amount
-    const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
-        return res.status(400).json({ message: 'Invalid amount' });
-    }
+    // Sanitize user input (even after Joi validation)
+    const sanitizedFromAccount = fromAccountNumber.trim();
+    const sanitizedToAccount = toAccountNumber.trim();
+    const sanitizedCurrency = currency.toUpperCase().trim();
+    const sanitizedSwiftCode = swiftCode.trim();
 
     // Validate SWIFT code
     if (!validateSwiftCode(swiftCode)) {
@@ -63,21 +70,22 @@ router.post('/create', authMiddleware, async (req, res) => {
     }
     
     try {
-        // Find users by account numbers using sanitized inputs
-        const fromUser = await User.findOne({ 
-            accountNumber: sanitizedFromAccount 
-        }).select('_id accountNumber').lean();
-        
-        const toUser = await User.findOne({ 
-            accountNumber: sanitizedToAccount 
-        }).select('_id accountNumber').lean();
+        // Use strict equality comparison in your query with sanitized inputs
+        const fromUser = await User.findOne({
+            accountNumber: { $eq: sanitizedFromAccount },
+            active: true // Assuming you only want active accounts
+        }).lean(); // Use .lean() to return plain JavaScript object
+
+        const toUser = await User.findOne({
+            accountNumber: { $eq: sanitizedToAccount },
+            active: true
+        }).lean();
 
         if (!fromUser || !toUser) {
-            return res.status(404).json({ 
-                message: !fromUser && !toUser ? 'Both account numbers not found' :
-                         !fromUser ? 'From account number not found' :
-                         'To account number not found'
-            });
+            const errorMessage = !fromUser && !toUser ? 'Both account numbers not found' :
+                !fromUser ? 'From account number not found' :
+                'To account number not found';
+            return res.status(404).json({ message: errorMessage });
         }
 
         // Create transaction
