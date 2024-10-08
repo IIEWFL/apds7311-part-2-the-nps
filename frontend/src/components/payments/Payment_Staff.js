@@ -3,27 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Payment_Staff.css'; // Import your CSS file for styling
 
+// For more information, visit: https://reactrouter.com/en/main/start/overview
+// Additional reference: https://ui.dev/react-router-tutorial
+
 function Payments_Staff() {
-  const navigate = useNavigate();
-  const [transactions, setTransactions] = useState([]);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const navigate = useNavigate(); // Hook for navigating
+  const [transactions, setTransactions] = useState([]); // State for storing transactions
+  const [selectedTransaction, setSelectedTransaction] = useState(null); // State for the selected transaction
 
   // Fetch transactions when the component is mounted
   useEffect(() => {
     async function fetchTransactions() {
       try {
         const response = await axios.get('/api'); // Adjust the API endpoint as needed
-        setTransactions(response.data);
+        setTransactions(response.data); // Set the fetched transactions to state
       } catch (error) {
-        console.error('Error fetching transactions:', error);
+        console.error('Error fetching transactions:', error); // Log any errors
       }
     }
-    fetchTransactions();
+    fetchTransactions(); // Call the function to fetch transactions
   }, []);
 
   // Function to handle transaction selection
   const handleSelectTransaction = (transaction) => {
-    setSelectedTransaction(transaction);
+    setSelectedTransaction(transaction); // Set the selected transaction to state
   };
 
   // Function to approve the selected transaction
@@ -31,10 +34,10 @@ function Payments_Staff() {
     if (selectedTransaction) {
       try {
         await axios.put(`/api/${selectedTransaction._id}/approve`); // Adjust the API endpoint as needed
-        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id));
-        setSelectedTransaction(null);
+        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id)); // Remove the approved transaction from the list
+        setSelectedTransaction(null); // Clear the selected transaction
       } catch (error) {
-        console.error('Error approving transaction:', error);
+        console.error('Error approving transaction:', error); // Log any errors
       }
     }
   };
@@ -44,10 +47,10 @@ function Payments_Staff() {
     if (selectedTransaction) {
       try {
         await axios.delete(`/api/${selectedTransaction._id}`); // Adjust the API endpoint as needed
-        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id));
-        setSelectedTransaction(null);
+        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id)); // Remove the canceled transaction from the list
+        setSelectedTransaction(null); // Clear the selected transaction
       } catch (error) {
-        console.error('Error canceling transaction:', error);
+        console.error('Error canceling transaction:', error); // Log any errors
       }
     }
   };
@@ -105,3 +108,9 @@ function Payments_Staff() {
 }
 
 export default Payments_Staff;
+
+/* This code was adapted from various tutorials on React, Axios, and useEffect for data fetching and state management */
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/

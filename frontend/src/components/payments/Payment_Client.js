@@ -6,6 +6,9 @@ import './Payment_Client.css'; // Import your CSS file for styling
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
+// For more information, visit: https://reactrouter.com/en/main/start/overview
+// Additional reference: https://ui.dev/react-router-tutorial
+
 // Validation schema using Yup for form validation
 const validationSchema = Yup.object({
   fromAccountNumber: Yup.string().required('From Account is required'),
@@ -21,8 +24,8 @@ const validationSchema = Yup.object({
 });
 
 function Payments_Client() {
-  const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const navigate = useNavigate(); // Hook for navigating
+  const token = localStorage.getItem('token'); // Retrieve token from local storage
 
   const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
     console.log('Handle Submit Called');
@@ -39,6 +42,7 @@ function Payments_Client() {
     console.log('Payload being sent to server:', payload);
     
     try {
+      // Make the POST request to the payment API
       const response = await axios.post('https://localhost:5000/api/create', payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -47,24 +51,24 @@ function Payments_Client() {
       });
       console.log('Server response:', response.data);
       alert('Payment successful.');
-      resetForm();
+      resetForm(); // Reset the form after successful submission
     } catch (err) {
       console.error('Error submitting form:', err);
       if (err.response) {
-        alert(err.response.data.message);
+        alert(err.response.data.message); // Show server error message
         setErrors({ serverError: err.response.data.message });
       } else {
-        setErrors({ serverError: 'Something went wrong. Please try again.' });
+        setErrors({ serverError: 'Something went wrong. Please try again.' }); // Show generic error message
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); // Stop the form submission state
     }
   };
 
   const handleCancel = (resetForm) => {
     alert('Transaction canceled.');
     console.log('cancel');
-    resetForm();
+    resetForm(); // Reset the form on cancel
   };
 
   return (
@@ -81,9 +85,9 @@ function Payments_Client() {
             currency: '',
             paymentMethod: '',
             swiftCode: ''
-          }}
-          validationSchema={validationSchema}
-          onSubmit={handleSubmit}
+          }} // Initial form values
+          validationSchema={validationSchema} // Validation schema for form fields
+          onSubmit={handleSubmit} // Form submission handler
         >
           {({ isSubmitting, errors, resetForm }) => (
             <Form>
@@ -184,3 +188,9 @@ function Payments_Client() {
 }
 
 export default Payments_Client;
+
+/* This code was adapted from various tutorials on React, Formik, and Yup for form handling and validation */
+// This method was adapted from the Express documentation on routing and various tutorials on transaction management
+// https://expressjs.com/en/guide/routing.html
+// Express Documentation
+// https://expressjs.com/
