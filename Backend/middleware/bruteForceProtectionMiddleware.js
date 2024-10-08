@@ -13,7 +13,7 @@ const bruteForceSchema = new mongoose.Schema({
         lastRequest: Date,
         firstRequest: Date
     },
-    expires: { type: Date, index: { expires: 0 } }
+    expires: { type: Date, index: { expires: "id" } }
 }, { timestamps: false });
 
 const BruteForceModel = mongoose.model("BruteForce", bruteForceSchema);
@@ -24,7 +24,7 @@ const bruteForce = new ExpressBrute(store, {
     freeRetries: FREE_RETRIES,
     minWait: MIN_WAIT,
     maxWait: MAX_WAIT,
-    failCallback: (req, res, next, nextValidRequestDate) => {
+    failCallback: function(req, res, next, nextValidRequestDate) {
         res.status(429).json({
             message: "Too many failed attempts. Please try again later.",
             nextValidRequestDate

@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create a new transaction (Transfer)
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/',authMiddleware, async (req, res) => {
     
         const { fromAccountNumber, toAccountNumber, amount } = req.body;
 
@@ -49,7 +49,7 @@ try {
 });
 
 // Get transaction by ID
-router.get('/:id', authMiddleware,  async (req, res) => {
+router.get('/:id',authMiddleware,  async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id)
          
