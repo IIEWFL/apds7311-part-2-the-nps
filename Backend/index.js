@@ -5,21 +5,23 @@ import https from 'https';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import fs from 'fs';
-import connectDB from './db/connection.js'; 
-import authRoutes from './Routes/auth.js'; 
+import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
+import hpp from 'hpp';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import connectDB from './db/connection.js';
+import authRoutes from './Routes/auth.js';
 import transactionRoutes from './Routes/Transaction.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Connect to the database
 connectDB();
-
-// Middleware
-app.use(helmet()); // Security headers
-app.use(express.json()); // Parse JSON bodies
-app.use(morgan('combined')); // Log HTTP requests
-app.use(cors()); // Enable CORS (Cross-Origin Resource Sharing)
 
 // Security Middleware Configuration
 // Rate limiting - DDoS Protection
@@ -97,6 +99,10 @@ const corsOptions = {
 };
 
 // Apply Security Middleware
+app.use(helmet()); // Security headers
+app.use(express.json()); // Parse JSON bodies
+app.use(morgan('combined')); // Log HTTP requests
+app.use(cors()); // Enable CORS (Cross-Origin Resource Sharing)
 app.use(helmet(helmetConfig));
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10kb' })); // Limit payload size
