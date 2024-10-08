@@ -25,6 +25,7 @@ const validationSchema = Yup.object({
 function Payments_Client() {
 
   const navigate = useNavigate();
+  const [transactions, setTransactions] = useState([]); // State to store fetched transactions
   const token = localStorage.getItem('token');
 
   // Fetch transactions for the logged-in user
@@ -69,7 +70,9 @@ function Payments_Client() {
           'Content-Type': 'application/json',
         },
       });
-      setTransactions(updatedTransactions.data)
+      
+      const updatedTransactions = response.data; // Assuming response.data contains the updated transactions
+      setTransactions(updatedTransactions); // Set the updated transactions in state
       resetForm(); // Reset the form after successful submission
     } catch (err) {
       console.error('Error submitting form:', err);
@@ -95,7 +98,25 @@ function Payments_Client() {
       <div className="payments-box">
         <h1 className="payments-title">Payments</h1>
         <p>Here is where you can make your transactions and see a list of all your past transactions.</p>
-
+  
+        {/* Display fetched transactions */}
+        <h2 className="transactions-title">Your Transactions</h2>
+        <div className="transactions-list">
+          {transactions.length === 0 ? (
+            <p>No transactions found.</p>
+          ) : (
+            transactions.map((transaction) => (
+              <div key={transaction.id} className="transaction-item">
+                <p><strong>From:</strong> {transaction.fromAccountNumber}</p>
+                <p><strong>To:</strong> {transaction.toAccountNumber}</p>
+                <p><strong>Amount:</strong> {transaction.amount} {transaction.currency}</p>
+                <p><strong>Date:</strong> {new Date(transaction.date).toLocaleString()}</p>
+              </div>
+            ))
+          )}
+        </div>
+  
+        {/* Formik form for submitting new payments */}
         <Formik
           initialValues={{
             fromAccountNumber: '',
