@@ -39,7 +39,7 @@ function Register() {
       }
     );
 
-
+    alert('Registration successfull.');
 
       // Optionally, redirect to login or another page after successful registration
       navigate('/login'); // Redirect to login page after successful registration
