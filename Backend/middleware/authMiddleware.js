@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
 import { verify, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
 
 const { TokenExpiredError, JsonWebTokenError } = jwt;
