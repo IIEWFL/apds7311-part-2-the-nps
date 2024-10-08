@@ -25,7 +25,6 @@ const validationSchema = Yup.object({
 function Payments_Client() {
 
   const navigate = useNavigate();
-  const [transactions, setTransactions] = useState([]); // State to store fetched transactions
   const token = localStorage.getItem('token');
 
   // Fetch transactions for the logged-in user
@@ -69,8 +68,7 @@ function Payments_Client() {
           'Content-Type': 'application/json',
         },
       });
-      console.log('Server response:', response.data);
-      alert('Payment successful.');
+      setTransactions(updatedTransactions.data)
       resetForm(); // Reset the form after successful submission
     } catch (err) {
       console.error('Error submitting form:', err);
