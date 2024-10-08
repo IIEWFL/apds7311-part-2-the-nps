@@ -8,18 +8,31 @@ const router = express.Router();
 // Helper function for SWIFT code validation
 const validateSwiftCode = (swiftCode) => {
     const swiftCodeRegex = /^[A-Z0-9]{8,11}$/; 
-    return swiftCodeRegex.test(swiftCode);
+    return typeof swiftCode == 'string' && swiftCodeRegex.test(swiftCode);
+};
+
+// Helper function to sanitize and validate MongoDB ID
+const isValidObjectId = (id) => {
+    return mongoose.Types.ObjectId.isValid(id);
+};
+
+// Helper function to sanitize account numbers
+const sanitizeAccountNumber = (accountNumber) => {
+    return typeof accountNumber === 'string' ? accountNumber.toString().trim() : '';
 };
 
 // Get all transactions (for employees)
 router.get('/', authMiddleware, async (req, res) => {
     try {
-        const transactions = await Transaction.find({ status: 'pending' }); // Show only pending transactions
+        const transactions = await Transaction.find({ 
+            status: 'pending' 
+        }).select('-__v').lean();
+        
         console.log(`Retrieved ${transactions.length} pending transactions`);
         res.status(200).json({ transactions });
     } catch (err) {
         console.error('Error fetching transactions:', err.message);
-        res.status(500).json({ message: 'Internal Server Error', error: err.message });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
@@ -33,46 +46,60 @@ router.post('/create', authMiddleware, async (req, res) => {
         return res.status(400).json({ message: 'Fill in all fields' });
     }
 
+    // Sanitize inputs
+    const sanitizedFromAccount = sanitizeAccountNumber(fromAccountNumber);
+    const sanitizedToAccount = sanitizeAccountNumber(toAccountNumber);
+    
+    // Validate amount
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+        return res.status(400).json({ message: 'Invalid amount' });
+    }
+
     // Validate SWIFT code
     if (!validateSwiftCode(swiftCode)) {
         console.warn('Invalid SWIFT code:', swiftCode);
         return res.status(400).json({ message: 'Invalid SWIFT code' });
-    }try {
-        // Find users by account numbers
-        const fromUser = await User.findOne({ accountNumber: fromAccountNumber });
-        const toUser = await User.findOne({ accountNumber: toAccountNumber });
-
-        console.log('From User:', fromUser);
-        console.log('To User:', toUser);
-
-        // Check if both users were found
-        if (!fromUser || !toUser) {
-            const errorMessage = !fromUser && !toUser ? 'Both account numbers not found' :
-                                 !fromUser ? 'From account number not found' :
-                                 'To account number not found';
-            console.warn(errorMessage, { fromAccountNumber, toAccountNumber });
-            return res.status(404).json({ message: errorMessage });
-        }
-// Create transaction
-const transaction = new Transaction({
-    fromAccount: fromUser._id,
-    toAccount: toUser._id,
-    fromAccountNumber,
-    toAccountNumber,
-    amount: amount,
-    currency: currency,
-    swiftCode: swiftCode,
-    paymentMethod: paymentMethod, 
+    }
     
-});
+    try {
+        // Find users by account numbers using sanitized inputs
+        const fromUser = await User.findOne({ 
+            accountNumber: sanitizedFromAccount 
+        }).select('_id accountNumber').lean();
+        
+        const toUser = await User.findOne({ 
+            accountNumber: sanitizedToAccount 
+        }).select('_id accountNumber').lean();
 
-await transaction.save();
-console.log('Transaction created successfully:', transaction);
-res.status(201).json({ message: 'Transaction created successfully', transaction });
-} catch (err) {
-console.error('Error creating transaction:', err.message);
-res.status(500).json({ message: 'Internal Server Error', error: err.message });
-}
+        if (!fromUser || !toUser) {
+            return res.status(404).json({ 
+                message: !fromUser && !toUser ? 'Both account numbers not found' :
+                         !fromUser ? 'From account number not found' :
+                         'To account number not found'
+            });
+        }
+
+        // Create transaction
+        const transaction = new Transaction({
+            fromAccount: fromUser._id,
+            toAccount: toUser._id,
+            fromAccountNumber: sanitizedFromAccount,
+            toAccountNumber: sanitizedToAccount,
+            amount: amount,
+            currency: currency.toString().trim(),
+            swiftCode: swiftCode.toString().trim(),
+            paymentMethod: paymentMethod.toString().trim(), 
+            
+        });
+
+        await transaction.save();
+        console.log('Transaction created successfully:', transaction);
+        res.status(201).json({ message: 'Transaction created successfully', transaction });
+    } catch (err) {
+        console.error('Error creating transaction:', err.message);
+        res.status(500).json({ message: 'Internal Server Error', error: err.message });
+    }
 });
 
 
@@ -80,22 +107,27 @@ res.status(500).json({ message: 'Internal Server Error', error: err.message });
 // Employees verify and submit transactions to SWIFT
 router.put('/verify/:id', authMiddleware, async (req, res) => {
     try {
-        const transaction = await Transaction.findById(req.params.id);
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid transaction ID' });
+        }
+
+        const transaction = await Transaction.findOneAndUpdate(
+            { 
+                _id: req.params.id,
+                status: { $ne: 'completed' }
+            },
+            { $set: { status: 'verified' } },
+            { new: true }
+        ).lean();
 
         if (!transaction) {
-            console.warn('Transaction not found:', req.params.id);
             return res.status(404).json({ message: 'Transaction not found' });
         }
 
-        // Verify the transaction details
-        transaction.status = 'verified';
-        await transaction.save();
-        console.log('Transaction verified:', transaction);
-
-        res.status(200).json({ message: 'Transaction verified and ready to submit to SWIFT', transaction });
+        res.status(200).json({ message: 'Transaction verified and ready to submit to SWIFT' });
     } catch (err) {
         console.error('Error verifying transaction:', err.message);
-        res.status(500).json({ message: 'Internal Server Error', error: err.message });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
@@ -124,18 +156,20 @@ router.post('/submit/:id', authMiddleware, async (req, res) => {
 // Get all transactions for the logged-in user
 router.get('/my-transactions', authMiddleware, async (req, res) => {
     try {
-        // Find all transactions where the logged-in user is either the sender or recipient
+        const userId = req.user.id;
+        if (!isValidObjectId(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID' });
+        }
+
         const transactions = await Transaction.find({
             $or: [
-                { fromAccount: req.user.id },
-                { toAccount: req.user.id }
+                { fromAccount: userId },
+                { toAccount: userId }
             ]
-        }).populate('fromAccount toAccount', 'accountNumber name'); // Populates accountNumber and name for the involved users
-
-        if (!transactions || transactions.length === 0) {
-            console.log('No transactions found for user:', req.user.id);
-            return res.status(404).json({ message: 'No transactions found' });
-        }
+        })
+        .select('-__v')
+        .populate('fromAccount toAccount', 'accountNumber name')
+        .lean();
 
         res.status(200).json({ transactions });
     } catch (err) {
