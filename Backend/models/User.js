@@ -7,26 +7,26 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true,
         trim: true,
-        match: /^[a-zA-Z0-9_]{3,30}$/, // Allows alphanumeric and underscores, 3-30 characters
+        match: /^[a-zA-Z0-9_]{3,30}$/,
     },
     fullName: {
         type: String,
         required: true,
         trim: true,
-        match: /^[a-zA-Z\s]+$/, // Allows letters and spaces only
+        match: /^[a-zA-Z\s]+$/, 
     },
     idNumber: {
         type: String,
         required: true,
         unique: true,
         trim: true,
-        match: /^[0-9]{13}$/, // Example: 13-digit South African ID number format
+        match: /^[0-9]{13}$/,
     },
     accountNumber: {
         type: String,
         required: true,
         unique: true,
-        match: /^[0-9]{10,12}$/, // Example: 10 to 12 digits for account numbers
+        match: /^[0-9]{10,12}$/, 
     },
     password: {
         type: String,
