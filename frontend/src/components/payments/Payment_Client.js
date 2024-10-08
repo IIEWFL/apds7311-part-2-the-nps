@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Payment_Client.css'; // Import your CSS file for styling
@@ -24,13 +23,34 @@ const validationSchema = Yup.object({
 });
 
 function Payments_Client() {
-  const navigate = useNavigate(); // Hook for navigating
-  const token = localStorage.getItem('token'); // Retrieve token from local storage
+
+  const navigate = useNavigate();
+  const [transactions, setTransactions] = useState([]); // State to store fetched transactions
+  const token = localStorage.getItem('token');
+
+  // Fetch transactions for the logged-in user
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await axios.get('https://localhost:5000/api/create', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        setTransactions(response.data);
+      } catch (err) {
+        console.error('Error fetching transactions:', err);
+        alert('Failed to load transactions.');
+      }
+    };
+
+    fetchTransactions(); // Call the function to fetch transactions when the component mounts
+  }, [token]);
 
   const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
     console.log('Handle Submit Called');
     console.log('Submitting:', values);
-    
+
     const payload = {
       fromAccountNumber: values.fromAccountNumber,
       toAccountNumber: values.toAccountNumber,
@@ -40,14 +60,14 @@ function Payments_Client() {
       paymentMethod: values.paymentMethod,
     };
     console.log('Payload being sent to server:', payload);
-    
+
     try {
       // Make the POST request to the payment API
       const response = await axios.post('https://localhost:5000/api/create', payload, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+        },
       });
       console.log('Server response:', response.data);
       alert('Payment successful.');
@@ -175,9 +195,9 @@ function Payments_Client() {
                   Cancel Payment
                 </button>
 
-                <button type="button" className="back-button" onClick={() => navigate('/')}>
-                  Back to Welcome
-                </button>
+                <button className="back-button" onClick={() => navigate('/')}>
+                Back to Welcome
+              </button>
               </div>
             </Form>
           )}
@@ -189,8 +209,10 @@ function Payments_Client() {
 
 export default Payments_Client;
 
+
 /* This code was adapted from various tutorials on React, Formik, and Yup for form handling and validation */
 // This method was adapted from the Express documentation on routing and various tutorials on transaction management
 // https://expressjs.com/en/guide/routing.html
 // Express Documentation
 // https://expressjs.com/
+

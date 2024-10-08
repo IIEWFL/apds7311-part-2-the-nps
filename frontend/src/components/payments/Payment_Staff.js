@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Payment_Staff.css'; // Import your CSS file for styling
 
-// For more information, visit: https://reactrouter.com/en/main/start/overview
-// Additional reference: https://ui.dev/react-router-tutorial
-
 function Payments_Staff() {
   const navigate = useNavigate(); // Hook for navigating
   const [transactions, setTransactions] = useState([]); // State for storing transactions
@@ -15,43 +12,103 @@ function Payments_Staff() {
   useEffect(() => {
     async function fetchTransactions() {
       try {
-        const response = await axios.get('/api'); // Adjust the API endpoint as needed
-        setTransactions(response.data); // Set the fetched transactions to state
+        const token = localStorage.getItem('token'); // Retrieve the auth token
+
+        // If token is not available, redirect to login
+        if (!token) {
+          console.error('No token found, redirecting to login.');
+          navigate('/login'); // Adjust the route for your login page
+          return;
+        }
+
+        // Make the API request with the token in the Authorization header
+        const response = await axios.get('https://localhost:5000/api/get', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach the token
+          },
+        });
+
+        // Log the API response
+        console.log('API response received:', response.data);
+        // Update the state with the transactions from the response
+        setTransactions(response.data.transactions); // Set the transactions state correctly
       } catch (error) {
-        console.error('Error fetching transactions:', error); // Log any errors
+        console.error('Error fetching transactions:', error);
+
+        // Log the error response for more detail
+        if (error.response) {
+          console.error('Error response:', error.response.data);
+        }
+
+        // Handle the 401 Unauthorized error
+        if (error.response && error.response.status === 401) {
+          console.error('Unauthorized - Redirecting to login');
+          navigate('/login'); // Redirect to login if unauthorized
+        }
       }
     }
-    fetchTransactions(); // Call the function to fetch transactions
-  }, []);
+
+    fetchTransactions(); // Call the fetch function when component mounts
+  }, [navigate]);
 
   // Function to handle transaction selection
   const handleSelectTransaction = (transaction) => {
-    setSelectedTransaction(transaction); // Set the selected transaction to state
+    console.log('Transaction selected:', transaction);
+    setSelectedTransaction(transaction);
   };
 
   // Function to approve the selected transaction
   const handleApprove = async () => {
     if (selectedTransaction) {
+      console.log('Approving transaction:', selectedTransaction);
+      const token = localStorage.getItem('token'); // Retrieve the auth token
+
       try {
-        await axios.put(`/api/${selectedTransaction._id}/approve`); // Adjust the API endpoint as needed
-        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id)); // Remove the approved transaction from the list
+        // Send a request to approve the transaction
+        await axios.put(`https://localhost:5000/api/status/${selectedTransaction._id}`, {
+          status: 'approved', // Update the status to approved
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token
+          },
+        });
+
+        // Update the local state to reflect the change
+        setTransactions(transactions.map(transaction =>
+          transaction._id === selectedTransaction._id
+            ? { ...transaction, status: 'approved' }
+            : transaction
+        ));
         setSelectedTransaction(null); // Clear the selected transaction
       } catch (error) {
         console.error('Error approving transaction:', error); // Log any errors
       }
+    } else {
+      console.warn('No transaction selected for approval.');
     }
   };
 
-  // Function to cancel the selected transaction
-  const handleCancel = async () => {
+  // Function to save the selected transaction
+  const handleSave = async () => {
     if (selectedTransaction) {
+      console.log('Saving transaction:', selectedTransaction);
+      const token = localStorage.getItem('token'); // Retrieve the auth token
+
       try {
-        await axios.delete(`/api/${selectedTransaction._id}`); // Adjust the API endpoint as needed
-        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id)); // Remove the canceled transaction from the list
-        setSelectedTransaction(null); // Clear the selected transaction
+        // Send a request to save the transaction
+        await axios.post('https://localhost:5000/api/save', selectedTransaction, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token
+          },
+        });
+
+        console.log('Transaction saved successfully.');
+        // Optionally, refresh the transaction list or provide feedback to the user
       } catch (error) {
-        console.error('Error canceling transaction:', error); // Log any errors
+        console.error('Error saving transaction:', error); // Log any errors
       }
+    } else {
+      console.warn('No transaction selected for saving.');
     }
   };
 
@@ -70,21 +127,33 @@ function Payments_Staff() {
               <th>From Account</th>
               <th>To Account</th>
               <th>Amount</th>
+              <th>Currency</th>
+              <th>Status</th> {/* Status Column */}
+              <th>Payment Method</th> {/* Payment Method Column */}
             </tr>
           </thead>
           <tbody>
             {transactions.length > 0 ? (
               transactions.map(transaction => (
-                <tr key={transaction._id} onClick={() => handleSelectTransaction(transaction)} className={selectedTransaction === transaction ? 'selected' : ''}>
-                  <td><input type="checkbox" checked={selectedTransaction === transaction} readOnly /></td>
+                <tr 
+                  key={transaction._id} 
+                  onClick={() => handleSelectTransaction(transaction)} 
+                  className={selectedTransaction && selectedTransaction._id === transaction._id ? 'selected' : ''}
+                >
+                  <td>
+                    <input type="checkbox" checked={selectedTransaction && selectedTransaction._id === transaction._id} readOnly />
+                  </td>
                   <td>{transaction.fromAccount}</td>
                   <td>{transaction.toAccount}</td>
                   <td>{transaction.amount}</td>
+                  <td>{transaction.currency}</td>
+                  <td>{transaction.status}</td>
+                  <td>{transaction.paymentMethod}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4">No transactions found</td>
+                <td colSpan="7">No transactions found</td> {/* Adjusted colspan */}
               </tr>
             )}
           </tbody>
@@ -95,8 +164,9 @@ function Payments_Staff() {
           <button className="approve-button" onClick={handleApprove} disabled={!selectedTransaction}>
             Approve
           </button>
-          <button className="cancel-button" onClick={handleCancel} disabled={!selectedTransaction}>
-            Cancel
+          
+          <button className="save-button" onClick={handleSave} disabled={!selectedTransaction} style={{ backgroundColor: 'blue', color: 'white' }}>
+            Submitted to SWIFT
           </button>
           <button className="back-button" onClick={() => navigate('/')}>
             Back to Welcome
