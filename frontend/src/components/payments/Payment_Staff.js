@@ -12,43 +12,116 @@ function Payments_Staff() {
   useEffect(() => {
     async function fetchTransactions() {
       try {
-        const response = await axios.get('/api'); // Adjust the API endpoint as needed
-        setTransactions(response.data);
+        const token = localStorage.getItem('token'); // Retrieve the auth token
+
+        // If token is not available, redirect to login
+        if (!token) {
+          console.error('No token found, redirecting to login.');
+          navigate('/login'); // Adjust the route for your login page
+          return;
+        }
+
+        // Make the API request with the token in the Authorization header
+        const response = await axios.get('https://localhost:5000/api/get', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach the token
+          },
+        });
+
+        // Update the state with the transactions from the response
+        console.log('API response received:', response.data);
+        setTransactions(response.data.transactions); // Set the transactions state correctly
       } catch (error) {
         console.error('Error fetching transactions:', error);
+
+        // Handle the 401 Unauthorized error
+        if (error.response && error.response.status === 401) {
+          console.error('Unauthorized - Redirecting to login');
+          navigate('/login'); // Redirect to login if unauthorized
+        }
       }
     }
-    fetchTransactions();
-  }, []);
+
+    fetchTransactions(); // Call the fetch function when component mounts
+  }, [navigate]);
 
   // Function to handle transaction selection
   const handleSelectTransaction = (transaction) => {
+    console.log('Transaction selected:', transaction);
     setSelectedTransaction(transaction);
   };
 
   // Function to approve the selected transaction
   const handleApprove = async () => {
     if (selectedTransaction) {
+      console.log('Approving transaction:', selectedTransaction);
+      const token = localStorage.getItem('token'); // Retrieve the auth token
+
+      // Log the token and request config
+      console.log('Token:', token);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      console.log('Request config:', config);
+
       try {
-        await axios.put(`/api/${selectedTransaction._id}/approve`); // Adjust the API endpoint as needed
-        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id));
+        // Send a request to approve the transaction
+        await axios.put(`https://localhost:5000/api/status/${selectedTransaction._id}`, {
+          status: 'approved', // Update the status to approved
+        }, config); // Include the config here
+
+        // Update the local state to reflect the change
+        setTransactions(transactions.map(transaction => 
+          transaction._id === selectedTransaction._id 
+            ? { ...transaction, status: 'approved' } 
+            : transaction
+        ));
+
         setSelectedTransaction(null);
       } catch (error) {
         console.error('Error approving transaction:', error);
       }
+    } else {
+      console.warn('No transaction selected for approval.');
     }
   };
 
   // Function to cancel the selected transaction
   const handleCancel = async () => {
     if (selectedTransaction) {
+      console.log('Canceling transaction:', selectedTransaction);
+      const token = localStorage.getItem('token'); // Retrieve the auth token
+
+      // Log the token and request config
+      console.log('Token:', token);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      console.log('Request config:', config);
+
       try {
-        await axios.delete(`/api/${selectedTransaction._id}`); // Adjust the API endpoint as needed
-        setTransactions(transactions.filter(transaction => transaction._id !== selectedTransaction._id));
+        // Send a request to cancel the transaction
+        await axios.put(`https://localhost:5000/api/status/${selectedTransaction._id}/cancel`, {
+          status: 'declined', // Update the status to declined
+        }, config); // Include the config here
+
+        // Update the local state to reflect the change
+        setTransactions(transactions.map(transaction => 
+          transaction._id === selectedTransaction._id 
+            ? { ...transaction, status: 'declined' } 
+            : transaction
+        ));
+
         setSelectedTransaction(null);
       } catch (error) {
         console.error('Error canceling transaction:', error);
       }
+    } else {
+      console.warn('No transaction selected for cancelation.');
     }
   };
 
@@ -67,21 +140,33 @@ function Payments_Staff() {
               <th>From Account</th>
               <th>To Account</th>
               <th>Amount</th>
+              <th>Currency</th>
+              <th>Status</th> {/* Status Column */}
+              <th>Payment Method</th> {/* Payment Method Column */}
             </tr>
           </thead>
           <tbody>
             {transactions.length > 0 ? (
               transactions.map(transaction => (
-                <tr key={transaction._id} onClick={() => handleSelectTransaction(transaction)} className={selectedTransaction === transaction ? 'selected' : ''}>
-                  <td><input type="checkbox" checked={selectedTransaction === transaction} readOnly /></td>
+                <tr 
+                  key={transaction._id} 
+                  onClick={() => handleSelectTransaction(transaction)} 
+                  className={selectedTransaction === transaction ? 'selected' : ''}
+                >
+                  <td>
+                    <input type="checkbox" checked={selectedTransaction === transaction} readOnly />
+                  </td>
                   <td>{transaction.fromAccount}</td>
                   <td>{transaction.toAccount}</td>
                   <td>{transaction.amount}</td>
+                  <td>{transaction.currency}</td>
+                  <td>{transaction.status}</td>
+                  <td>{transaction.paymentMethod}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4">No transactions found</td>
+                <td colSpan="7">No transactions found</td> {/* Adjusted colspan */}
               </tr>
             )}
           </tbody>
@@ -93,7 +178,7 @@ function Payments_Staff() {
             Approve
           </button>
           <button className="cancel-button" onClick={handleCancel} disabled={!selectedTransaction}>
-            Cancel
+            Decline
           </button>
           <button className="back-button" onClick={() => navigate('/')}>
             Back to Welcome
