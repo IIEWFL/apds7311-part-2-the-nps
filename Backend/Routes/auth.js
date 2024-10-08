@@ -173,6 +173,7 @@ router.post('/login/staff', bruteForce.prevent, loginAttemptLogger, async (req, 
             return res.status(400).json({ message: 'Invalid Credentials' });
         }
 
+
         // Create a JWT token
         const token = jwt.sign({ id: existingStaff._id }, JWT_SECRET, { expiresIn: '1h' });
 
