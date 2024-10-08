@@ -17,11 +17,6 @@ const isValidObjectId = (id) => {
     return mongoose.Types.ObjectId.isValid(id);
 };
 
-// Helper function to sanitize account numbers
-const sanitizeAccountNumber = (accountNumber) => {
-    return typeof accountNumber === 'string' ? accountNumber.toString().trim() : '';
-};
-
 // Define a Joi schema for input validation
 const transactionSchema = Joi.object({
     fromAccountNumber: Joi.string().alphanum().min(8).max(12).trim().required(),
@@ -70,22 +65,27 @@ router.post('/create', authMiddleware, async (req, res) => {
     }
     
     try {
-        // Use strict equality comparison in your query with sanitized inputs
+        // Use strict equality comparison with sanitized inputs
         const fromUser = await User.findOne({
-            accountNumber: { $eq: sanitizedFromAccount },
-            active: true // Assuming you only want active accounts
-        }).lean(); // Use .lean() to return plain JavaScript object
-
+            $and: [
+                { accountNumber: { $eq: sanitizedFromAccount } },
+                { active: { $eq: true } }
+            ]
+        }).select('_id accountNumber').lean();
+        
         const toUser = await User.findOne({
-            accountNumber: { $eq: sanitizedToAccount },
-            active: true
-        }).lean();
+            $and: [
+                { accountNumber: { $eq: sanitizedToAccount } },
+                { active: { $eq: true } }
+            ]
+        }).select('_id accountNumber').lean();
 
         if (!fromUser || !toUser) {
-            const errorMessage = !fromUser && !toUser ? 'Both account numbers not found' :
-                !fromUser ? 'From account number not found' :
-                'To account number not found';
-            return res.status(404).json({ message: errorMessage });
+            return res.status(404).json({ 
+                message: !fromUser && !toUser ? 'Both account numbers not found' :
+                         !fromUser ? 'From account number not found' :
+                         'To account number not found'
+            });
         }
 
         // Create transaction
@@ -95,8 +95,8 @@ router.post('/create', authMiddleware, async (req, res) => {
             fromAccountNumber: sanitizedFromAccount,
             toAccountNumber: sanitizedToAccount,
             amount: amount,
-            currency: currency.toString().trim(),
-            swiftCode: swiftCode.toString().trim(),
+            currency: sanitizedCurrency,
+            swiftCode: sanitizedSwiftCode,
             paymentMethod: paymentMethod.toString().trim(), 
             
         });
