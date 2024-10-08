@@ -33,18 +33,28 @@ function Login() {
   };
 
   const handleLoginClick = async (values, { setSubmitting, setErrors }) => {
+   console.log("Login attempt with values:", values); // Log login values
+
     try {
       // Dynamically set the API path based on the userType
-      const apiPath = userType === 'Client' ? 'https://localhost:5000/api/auth/login/user' : 'https://localhost:5000/api/auth/login/staff';
+      const apiPath = userType === 'Client' 
+        ? 'https://localhost:5000/api/auth/login/user' 
+        : 'https://localhost:5000/api/auth/login/staff';
+
+      console.log("API Path:", apiPath); // Log API path
 
       // Make the POST request to the appropriate path
       const response = await axios.post(apiPath, {
         username: values.username,
+        password: values.password, // Ensure password is included
         accountNumber: userType === 'Client' ? values.accountNumber : undefined, // Only send accountNumber for "Client"
-        password: values.password,
       });
 
-      // Store the received token in local storage
+
+      console.log("Response data:", response.data); // Log response data
+
+      // Store the token in local storage
+
       localStorage.setItem('token', response.data.token);
 
       // Navigate to the correct payments page based on user type
@@ -54,9 +64,12 @@ function Login() {
         navigate('/payment'); // Navigate to Payments_Staff for "Staff"
       }
     } catch (err) {
-      // Handle errors and set error messages
+
+      console.error("Login error:", err); // Log the error
+
       if (err.response) {
-        setErrors({ serverError: err.response.data.message });
+        // Display specific error message from server
+        setErrors({ serverError: err.response.data.message || 'Invalid login details.' });
       } else {
         setErrors({ serverError: 'Something went wrong. Please try again.' });
       }
