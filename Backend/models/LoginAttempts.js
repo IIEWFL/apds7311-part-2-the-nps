@@ -33,6 +33,4 @@ const loginAttemptSchema = new mongoose.Schema({
 // Create a compound index for common query patterns
 loginAttemptSchema.index({ username: 1, timeStamp: -1 });
 
-const LoginAttempt = mongoose.model('LoginAttempt', loginAttemptSchema);
-
-export default LoginAttempt;
+export default mongoose.model('LoginAttempt', loginAttemptSchema);

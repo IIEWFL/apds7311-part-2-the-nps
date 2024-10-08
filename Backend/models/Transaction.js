@@ -71,6 +71,4 @@ TransactionSchema.virtual('totalAmount').get(function() {
     return this.amount * this.conversionRate;
 });
 
-const Transaction = mongoose.model('Transaction', TransactionSchema);
-
-export default Transaction;
+export default mongoose.model('Transaction', TransactionSchema);

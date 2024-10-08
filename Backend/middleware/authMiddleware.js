@@ -1,6 +1,7 @@
-import { jwt, verify, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'
+import { verify, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
 
-const {TokenExpiredError, JsonWebTokenError} = jwt;
+const { TokenExpiredError, JsonWebTokenError } = jwt;
 const BEARER_PREFIX = 'Bearer ';
 
 class InvalidTokenFormatError extends Error {
@@ -13,7 +14,6 @@ class InvalidTokenFormatError extends Error {
 const authMiddleware = (req, res, next) => {
     console.log('Request Headers:', req.headers);
     const authHeader = req.header('Authorization');
-
     console.log('Authorization Header:', authHeader);
     if (!authHeader) {
         return res.status(401).json({ message: 'No authorization header, access denied' });
@@ -29,7 +29,7 @@ const authMiddleware = (req, res, next) => {
     }
     console.log('Token:', parts[1]);
 
-    const token = authHeader.slice(BEARER_PREFIX.length);
+    const token = parts[1];
     console.log('Token:', token);   
 
     if (!token) {
