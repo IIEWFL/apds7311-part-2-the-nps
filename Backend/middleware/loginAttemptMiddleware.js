@@ -1,24 +1,24 @@
 import LoginAttempt from '../models/LoginAttempts.js';
 
 const loginAttemptLogger = async (req, res, next) => {
-    // Store the original res.json method
-    const originalJson = res.json.bind(res); // Bind the context to res
+    const originalJson = res.json.bind(res);
 
-    // Overwrite res.json
-    res.json = function(data) {
-        const username = req.body.username;
-        const ipAddress = req.id || req.connection.remoteAddress; // Assuming req.id is set elsewhere
+    res.json = async function(data) {
+        const { username } = req.body;
+        const ipAddress = req.ip || req.connection.remoteAddress;
         const successfulLogin = !data.message || data.message !== 'Invalid Credentials';
 
-        // Create a new login attempt log
-        LoginAttempt.create({ username, ipAddress, successfulLogin })
-            .catch(err => console.error('Error logging Login attempt:', err)); // Handle logging error
+        try {
+            await LoginAttempt.create({ username, ipAddress, successfulLogin });
+        } catch (err) {
+            console.error('Error logging login attempt:', err);
+            // Optionally, you could use a proper logging system here
+        }
 
-        // Call the original res.json with the correct context and data
-        return originalJson(data); // Call the original json method
+        return originalJson.call(this, data);
     };
 
-    next(); // Call next middleware or route handler
+    next();
 };
 
 export default loginAttemptLogger;

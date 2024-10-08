@@ -7,7 +7,7 @@ import authMiddleware from '../middleware/authMiddleware.js'; // Assuming you ha
 const router = express.Router();
 
 // Get all transactions
-router.get('/', limiter, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const transactions = await Transaction.find();
         res.status(200).json({ transactions });
@@ -17,7 +17,7 @@ router.get('/', limiter, async (req, res) => {
 });
 
 // Create a new transaction (Transfer)
-router.post('/', limiter, authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
     
         const { fromAccountNumber, toAccountNumber, amount } = req.body;
 
@@ -49,7 +49,7 @@ try {
 });
 
 // Get transaction by ID
-router.get('/:id', limiter,authMiddleware,  async (req, res) => {
+router.get('/:id', authMiddleware,  async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id)
          
@@ -64,7 +64,7 @@ router.get('/:id', limiter,authMiddleware,  async (req, res) => {
 });
 
 // Update a transaction by ID
-router.put('/:id', limiter,authMiddleware, async (req, res) => {
+router.put('/:id',authMiddleware, async (req, res) => {
     try {
         const { fromAccountNumber, toAccountNumber, amount } = req.body;
 
@@ -97,7 +97,7 @@ router.put('/:id', limiter,authMiddleware, async (req, res) => {
 });
 
 // Delete a transaction by ID
-router.delete('/:id', limiter,authMiddleware, async (req, res) => {
+router.delete('/:id',authMiddleware, async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id);
         if (!transaction) {
