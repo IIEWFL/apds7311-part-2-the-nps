@@ -28,11 +28,17 @@ function Payments_Staff() {
           },
         });
 
-        // Update the state with the transactions from the response
+        // Log the API response
         console.log('API response received:', response.data);
+        // Update the state with the transactions from the response
         setTransactions(response.data.transactions); // Set the transactions state correctly
       } catch (error) {
         console.error('Error fetching transactions:', error);
+
+        // Log the error response for more detail
+        if (error.response) {
+          console.error('Error response:', error.response.data);
+        }
 
         // Handle the 401 Unauthorized error
         if (error.response && error.response.status === 401) {
@@ -82,34 +88,27 @@ function Payments_Staff() {
     }
   };
 
-  // Function to cancel the selected transaction
-  const handleCancel = async () => {
+  // Function to save the selected transaction
+  const handleSave = async () => {
     if (selectedTransaction) {
-      console.log('Canceling transaction:', selectedTransaction);
+      console.log('Saving transaction:', selectedTransaction);
       const token = localStorage.getItem('token'); // Retrieve the auth token
 
       try {
-        // Send a request to cancel the transaction
-        await axios.put(`https://localhost:5000/api/status/${selectedTransaction._id}/cancel`, {
-          status: 'declined', // Update the status to declined
-        }, {
+        // Send a request to save the transaction
+        await axios.post('https://localhost:5000/api/save', selectedTransaction, {
           headers: {
             Authorization: `Bearer ${token}`, // Include token
           },
         });
 
-        // Update the local state to reflect the change
-        setTransactions(transactions.map(transaction =>
-          transaction._id === selectedTransaction._id
-            ? { ...transaction, status: 'declined' }
-            : transaction
-        ));
-        setSelectedTransaction(null); // Clear the selected transaction
+        console.log('Transaction saved successfully.');
+        // Optionally, refresh the transaction list or provide feedback to the user
       } catch (error) {
-        console.error('Error canceling transaction:', error); // Log any errors
+        console.error('Error saving transaction:', error); // Log any errors
       }
     } else {
-      console.warn('No transaction selected for cancelation.');
+      console.warn('No transaction selected for saving.');
     }
   };
 
@@ -136,13 +135,13 @@ function Payments_Staff() {
           <tbody>
             {transactions.length > 0 ? (
               transactions.map(transaction => (
-                <tr
-                  key={transaction._id}
-                  onClick={() => handleSelectTransaction(transaction)}
-                  className={selectedTransaction === transaction ? 'selected' : ''}
+                <tr 
+                  key={transaction._id} 
+                  onClick={() => handleSelectTransaction(transaction)} 
+                  className={selectedTransaction && selectedTransaction._id === transaction._id ? 'selected' : ''}
                 >
                   <td>
-                    <input type="checkbox" checked={selectedTransaction === transaction} readOnly />
+                    <input type="checkbox" checked={selectedTransaction && selectedTransaction._id === transaction._id} readOnly />
                   </td>
                   <td>{transaction.fromAccount}</td>
                   <td>{transaction.toAccount}</td>
@@ -165,8 +164,9 @@ function Payments_Staff() {
           <button className="approve-button" onClick={handleApprove} disabled={!selectedTransaction}>
             Approve
           </button>
-          <button className="cancel-button" onClick={handleCancel} disabled={!selectedTransaction}>
-            Decline
+          
+          <button className="save-button" onClick={handleSave} disabled={!selectedTransaction} style={{ backgroundColor: 'blue', color: 'white' }}>
+            Submitted to SWIFT
           </button>
           <button className="back-button" onClick={() => navigate('/')}>
             Back to Welcome

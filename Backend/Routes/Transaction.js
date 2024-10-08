@@ -97,7 +97,8 @@ router.post('/create', authMiddleware, async (req, res) => {
             amount,
             currency,
             swiftCode,
-            paymentMethod, 
+            paymentMethod
+            
         });
 
         await transaction.save();

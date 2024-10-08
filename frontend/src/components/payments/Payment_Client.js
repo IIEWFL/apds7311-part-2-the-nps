@@ -28,7 +28,6 @@ function Payments_Client() {
   const [transactions, setTransactions] = useState([]); // State to store fetched transactions
   const token = localStorage.getItem('token');
 
-
   // Fetch transactions for the logged-in user
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -97,36 +96,6 @@ function Payments_Client() {
       <div className="payments-box">
         <h1 className="payments-title">Payments</h1>
         <p>Here is where you can make your transactions and see a list of all your past transactions.</p>
-
-        <h2>Your Transactions</h2>
-        {transactions.length === 0 ? (
-          <p>No transactions found.</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>From</th>
-                <th>To</th>
-                <th>Amount</th>
-                <th>Currency</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction) => (
-                <tr key={transaction._id}>
-                  <td>{transaction.fromAccountNumber}</td>
-                  <td>{transaction.toAccountNumber}</td>
-                  <td>{transaction.amount}</td>
-                  <td>{transaction.currency}</td>
-                  <td>{transaction.status}</td>
-                  <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
 
         <Formik
           initialValues={{
@@ -226,9 +195,9 @@ function Payments_Client() {
                   Cancel Payment
                 </button>
 
-                <button type="button" className="back-button" onClick={() => navigate('/menu_client')}>
-                  Back
-                </button>
+                <button className="back-button" onClick={() => navigate('/')}>
+                Back to Welcome
+              </button>
               </div>
             </Form>
           )}
@@ -239,6 +208,7 @@ function Payments_Client() {
 }
 
 export default Payments_Client;
+
 
 /* This code was adapted from various tutorials on React, Formik, and Yup for form handling and validation */
 // This method was adapted from the Express documentation on routing and various tutorials on transaction management

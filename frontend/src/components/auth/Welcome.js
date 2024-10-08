@@ -21,17 +21,7 @@ function Welcome() {
     navigate('/register'); // Navigate to the Register route
   };
 
-  // Function to handle the register button click
-  const handlePaymentsClick = () => {
-    setActiveTab('payments'); // Set active tab to register
-    navigate('/payments'); // Navigate to the Register route
-  };
-
-   // Function to handle the register button click
-   const handlePaymentClick = () => {
-    setActiveTab('payment'); // Set active tab to register
-    navigate('/payment'); // Navigate to the Register route
-  };
+  
 
   return (
     <div className="welcome-container">
@@ -51,18 +41,6 @@ function Welcome() {
           onClick={handleRegisterClick}
         >
           Register
-        </button>
-        <button 
-          className={activeTab === 'payments' ? 'active-tab' : ''} 
-          onClick={handlePaymentsClick}
-        >
-          Payments -Client
-        </button>
-        <button 
-          className={activeTab === 'payment' ? 'active-tab' : ''} 
-          onClick={handlePaymentClick}
-        >
-          Payments -Staff
         </button>
       </div>
     </div>
