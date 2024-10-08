@@ -24,24 +24,6 @@ function Payments_Client() {
   const [transactions, setTransactions] = useState([]); // State to store fetched transactions
   const token = localStorage.getItem('token');
 
-  // Fetch transactions for the logged-in user
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await axios.get('https://localhost:5000/api/create', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        setTransactions(response.data);
-      } catch (err) {
-        console.error('Error fetching transactions:', err);
-        alert('Failed to load transactions.');
-      }
-    };
-
-    fetchTransactions(); // Call the function to fetch transactions when the component mounts
-  }, [token]);
 
   const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
     console.log('Handle Submit Called');
@@ -92,35 +74,7 @@ function Payments_Client() {
         <h1 className="payments-title">Payments</h1>
         <p>Here is where you can make your transactions and see a list of all your past transactions.</p>
 
-        <h2>Your Transactions</h2>
-        {transactions.length === 0 ? (
-          <p>No transactions found.</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>From</th>
-                <th>To</th>
-                <th>Amount</th>
-                <th>Currency</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction) => (
-                <tr key={transaction._id}>
-                  <td>{transaction.fromAccountNumber}</td>
-                  <td>{transaction.toAccountNumber}</td>
-                  <td>{transaction.amount}</td>
-                  <td>{transaction.currency}</td>
-                  <td>{transaction.status}</td>
-                  <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        
 
         <Formik
           initialValues={{
@@ -220,9 +174,9 @@ function Payments_Client() {
                   Cancel Payment
                 </button>
 
-                <button type="button" className="back-button" onClick={() => navigate('/menu_client')}>
-                  Back
-                </button>
+                <button className="back-button" onClick={() => navigate('/')}>
+                Back to Welcome
+              </button>
               </div>
             </Form>
           )}
