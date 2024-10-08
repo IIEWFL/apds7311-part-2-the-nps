@@ -3,7 +3,7 @@ import LoginAttempt from '../models/LoginAttempts.js';
 const loginAttemptLogger = async (req, res, next) => {
     const originalJson = res.json.bind(res);
 
-    res.json = async function(data) {
+    res.json = function(data) {
         const username = req.body.username;
         const ipAddress = req.id || req.connection.remoteAddress; // Assuming req.id is set elsewhere
         const successfulLogin = !data.message || data.message !== 'Invalid Credentials';
@@ -12,7 +12,7 @@ const loginAttemptLogger = async (req, res, next) => {
         LoginAttempt.create({ username, ipAddress, successfulLogin })
             .catch(err => console.error('Error logging Login attempt:', err)); // Handle logging error
         try {
-            await LoginAttempt.create({ username, ipAddress, successfulLogin });
+            LoginAttempt.create({ username, ipAddress, successfulLogin });
         } catch (err) {
             console.error('Error logging login attempt:', err);
             // Optionally, you could use a proper logging system here
