@@ -3,6 +3,8 @@ import Joi from 'joi';
 import Transaction from '../models/Transaction.js'; 
 import User from '../models/User.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import rateLimit from 'express-rate-limit';
+import asyncHandler from 'express-async-handler';
 
 const router = express.Router();
 
@@ -29,6 +31,12 @@ const transactionSchema = Joi.object({
     paymentMethod: Joi.string().valid('bank_transfer', 'credit_card', 'paypal').required(),
 });
 
+const createTransactionLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5, // Limit each IP to 5 requests per `window` (here, per minute)
+    message: 'Too many transaction creation attempts, please try again later.',
+});
+
 // Get all transactions (for employees)
 router.get('/', authMiddleware, async (req, res) => {
     try {
@@ -42,7 +50,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Create a new transaction (for customers)
-router.post('/create', authMiddleware, async (req, res) => {
+router.post('/create', createTransactionLimiter, authMiddleware, asyncHandler(async (req, res) => {
     // Validate input
     const { error } = transactionSchema.validate(req.body);
     if (error) {
@@ -107,7 +115,7 @@ res.status(201).json({ message: 'Transaction created successfully', transaction 
 console.error('Error creating transaction:', err.message);
 res.status(500).json({ message: 'Internal Server Error', error: err.message });
 }
-});
+}));
 
 
 
