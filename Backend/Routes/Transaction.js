@@ -11,6 +11,14 @@ const validateSwiftCode = (swiftCode) => {
     return swiftCodeRegex.test(swiftCode);
 };
 
+// Helper function to validate account number format
+const validateAccountNumber = (accountNumber) => {
+    // Assuming account numbers are alphanumeric and have a specific length
+    const accountNumberRegex = /^[A-Za-z0-9]{8,12}$/;
+    return accountNumberRegex.test(accountNumber);
+};
+
+
 // Get all transactions (for employees)
 router.get('/', authMiddleware, async (req, res) => {
     try {
@@ -37,13 +45,28 @@ router.post('/create', authMiddleware, async (req, res) => {
     if (!validateSwiftCode(swiftCode)) {
         console.warn('Invalid SWIFT code:', swiftCode);
         return res.status(400).json({ message: 'Invalid SWIFT code' });
-    }try {
-        // Find users by account numbers
-        const fromUser = await User.findOne({ accountNumber: fromAccountNumber });
-        const toUser = await User.findOne({ accountNumber: toAccountNumber });
+    }
+    // Validate account number formats
+    if (!validateAccountNumber(fromAccountNumber) || !validateAccountNumber(toAccountNumber)) {
+        console.warn('Invalid account number format');
+        return res.status(400).json({ message: 'Invalid account number format' });
+    }
 
-        console.log('From User:', fromUser);
-        console.log('To User:', toUser);
+    try {
+        // Find users by account numbers
+        // Use strict equality comparison and type checking
+        const fromUser = await User.findOne({
+            accountNumber: { $eq: fromAccountNumber },
+            active: true // Assuming we only want active accounts
+        }).select('_id accountNumber name').lean();
+
+        const toUser = await User.findOne({
+            accountNumber: { $eq: toAccountNumber },
+            active: true
+        }).select('_id accountNumber name').lean();
+
+        console.log('From User:', fromUser?.accountNumber);
+        console.log('To User:', toUser?.accountNumber);
 
         // Check if both users were found
         if (!fromUser || !toUser) {
