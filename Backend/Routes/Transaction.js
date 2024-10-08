@@ -5,6 +5,11 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Function to sanitize account number (example)
+function sanitizeAccountNumber(accountNumber) {
+    return accountNumber.replace(/[^a-zA-Z0-9]/g, ''); // Allow only alphanumeric characters
+}
+
 // Helper function for SWIFT code validation
 const validateSwiftCode = (swiftCode) => {
     const swiftCodeRegex = /^[A-Z0-9]{8,11}$/; 
@@ -39,13 +44,23 @@ router.post('/', authMiddleware, async (req, res) => {
         return res.status(400).json({ message: 'Invalid SWIFT code' });
     }
 
+    // Sanitize account numbers
+    const sanitizedFromAccountNumber = sanitizeAccountNumber(fromAccountNumber);
+    const sanitizedToAccountNumber = sanitizeAccountNumber(toAccountNumber);
+
+    // Additional validation for account numbers (e.g., length, format)
+    if (!isValidAccountNumber(sanitizedFromAccountNumber) || !isValidAccountNumber(sanitizedToAccountNumber)) {
+        console.warn('Invalid account numbers:', { fromAccountNumber, toAccountNumber });
+        return res.status(400).json({ message: 'Invalid account numbers' });
+    }
+
     try {
         // Find users by account numbers
-        const fromAccount = await User.findOne({ accountNumber: fromAccountNumber });
-        const toAccount = await User.findOne({ accountNumber: toAccountNumber });
+        const fromAccount = await User.findOne({ accountNumber: sanitizedFromAccountNumber });
+        const toAccount = await User.findOne({ accountNumber: sanitizedToAccountNumber });
 
         if (!fromAccount || !toAccount) {
-            console.warn('Account not found:', { fromAccountNumber, toAccountNumber });
+            console.warn('Account not found:', { fromAccountNumber: sanitizedFromAccountNumber, toAccountNumber: sanitizedToAccountNumber });
             return res.status(404).json({ message: 'Account not found' });
         }
 
