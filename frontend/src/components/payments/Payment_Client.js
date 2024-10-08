@@ -36,6 +36,7 @@ function Payments_Client() {
       currency: values.currency,
       swiftCode: values.swiftCode,
       paymentMethod: values.paymentMethod,
+      status: 'pending'
     };
     console.log('Payload being sent to server:', payload);
 

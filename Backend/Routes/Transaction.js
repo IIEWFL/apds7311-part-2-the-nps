@@ -25,7 +25,7 @@ router.get('/get', authMiddleware, async (req, res) => {
 
 // Create a new transaction (for customers)
 router.post('/create', authMiddleware, async (req, res) => {
-    const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode, paymentMethod } = req.body;
+    const { fromAccountNumber, toAccountNumber, amount, currency, swiftCode, paymentMethod, status} = req.body;
 
     if (!fromAccountNumber || !toAccountNumber || !amount || !currency || !swiftCode || !paymentMethod) {
         return res.status(400).json({ message: 'Fill in all fields' });
@@ -54,7 +54,9 @@ router.post('/create', authMiddleware, async (req, res) => {
             amount,
             currency,
             swiftCode,
-            paymentMethod
+            paymentMethod, 
+            status
+
             
         });
 
