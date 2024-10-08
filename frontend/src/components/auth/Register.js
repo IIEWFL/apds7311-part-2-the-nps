@@ -29,7 +29,7 @@ function Register() {
 
   const handleRegisterClick = async (values, { setSubmitting, setErrors }) => {
     try {
-      await axios.post('https://localhost:5000/api/auth/register', {
+      const response = await axios.post('https://localhost:5000/api/auth/register', {
         username: values.username,
         fullName: values.fullName,
         idNumber: values.idNumber,
@@ -38,7 +38,12 @@ function Register() {
 
       });
 
-    alert('Registration successfull.');
+    // Use the response in some way to avoid ESLint error
+    if (response.status === 200) {
+      alert('Registration successful: ' + response.data.message);  // Or display another field from the response
+    } else {
+      alert('Registration completed with status: ' + response.status);
+    }
 
       // Optionally, redirect to login or another page after successful registration
       navigate('/login'); // Redirect to login page after successful registration
