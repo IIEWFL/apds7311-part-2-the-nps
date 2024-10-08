@@ -7,7 +7,13 @@ import morgan from 'morgan';
 import fs from 'fs';
 import connectDB from './db/connection.js'; 
 import authRoutes from './Routes/auth.js'; 
+import dotenv from 'dotenv';
 import transactionRoutes from './Routes/Transaction.js';
+
+dotenv.config();
+
+const atlasUri = process.env.ATLAS_URI;
+const jwtSecret = process.env.JWT_SECRET;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
